@@ -6,7 +6,7 @@ use CodeIgniter\Database\Migration;
 
 class Users extends Migration
 {
-    public function up()
+  public function up()
 	{
 		$this->forge->addField([
 			'User_id'          => [
