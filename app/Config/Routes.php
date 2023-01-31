@@ -29,7 +29,18 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+// $routes->get('/', 'Home::index');
+
+$routes->get("/", "AuthController::index");
+$routes->post("/login", "AuthController::login");
+// $routes->get("/pages/index", "Pages::index");
+// $routes->get("/pages/about", "Pages::about");
+// $routes->get("/pages/contact", "Pages::contact");
+// $routes->get("/berita", "Berita::index");
+// $routes->get("/berita/index", "Berita::index");
+// $routes->get("/berita/create", "Berita::create");
+// $routes->get("/berita/edit/(:segment)", "Berita::edit/$1");
+// $routes->get("/berita/(:any)", "Berita::detail/$1");
 
 /*
  * --------------------------------------------------------------------

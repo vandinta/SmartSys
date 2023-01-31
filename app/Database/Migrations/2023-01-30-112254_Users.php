@@ -9,7 +9,7 @@ class Users extends Migration
   public function up()
 	{
 		$this->forge->addField([
-			'User_id'          => [
+			'user_id'          => [
 				'type'           => 'INT',
 				'constraint'     => 5,
 				'unsigned'       => true,
@@ -36,6 +36,9 @@ class Users extends Migration
 				'type'          => 'ENUM("admin", "petugas", "superadmin")',
 				'default' 		=> 'petugas',
 				'null' 			=> false,
+			],
+			'activation_status'      => [
+				'type'           => 'BOOL',
 			],
 			'created_at datetime default current_timestamp',
 			'updated_at datetime default current_timestamp on update current_timestamp',
