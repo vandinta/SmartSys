@@ -6,7 +6,7 @@ use CodeIgniter\Database\Migration;
 
 class Barang extends Migration
 {
-  public function up()
+	public function up()
 	{
 		$this->forge->addField([
 			'id_barang'          => [
@@ -15,11 +15,11 @@ class Barang extends Migration
 				'unsigned'       => true,
 				'auto_increment' => true
 			],
-      'id_kategori'          => [
+			'id_kategori'          => [
 				'type'           => 'INT',
 				'constraint'     => 5,
 				'unsigned'       => true,
-				'null'			=> false,
+				'null'			=> true,
 			],
 			'nama_barang'       => [
 				'type'           => 'VARCHAR',
@@ -31,12 +31,12 @@ class Barang extends Migration
 				'constraint'     => 5,
 				'null'           => false,
 			],
-      'harga_beli'       => [
+			'harga_beli'       => [
 				'type'           => 'VARCHAR',
 				'constraint'     => 255,
 				'null'           => false,
 			],
-      'harga_jual'       => [
+			'harga_jual'       => [
 				'type'           => 'VARCHAR',
 				'constraint'     => 255,
 				'null'           => false,
@@ -50,7 +50,7 @@ class Barang extends Migration
 		]);
 
 		$this->forge->addKey('id_barang', TRUE);
-        $this->forge->addForeignKey('id_kategori', 'tb_kategori', 'id_kategori', 'NO ACTION', 'NO ACTION');
+		$this->forge->addForeignKey('id_kategori', 'tb_kategori', 'id_kategori', 'CASCADE', 'SET NULL');
 		$this->forge->createTable('tb_barang', TRUE);
 	}
 

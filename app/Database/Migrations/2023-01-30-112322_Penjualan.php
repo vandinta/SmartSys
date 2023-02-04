@@ -6,7 +6,7 @@ use CodeIgniter\Database\Migration;
 
 class Penjualan extends Migration
 {
-    public function up()
+	public function up()
 	{
 		$this->forge->addField([
 			'id_penjualan'          => [
@@ -15,13 +15,13 @@ class Penjualan extends Migration
 				'unsigned'       => true,
 				'auto_increment' => true
 			],
-            'user_id'          => [
+			'user_id'          => [
 				'type'           => 'INT',
 				'constraint'     => 5,
 				'unsigned'       => true,
-				'null'			=> false,
+				'null'			=> true,
 			],
-            'total_harga'       => [
+			'total_harga'       => [
 				'type'           => 'VARCHAR',
 				'constraint'     => 255,
 				'null'           => false,
@@ -31,7 +31,7 @@ class Penjualan extends Migration
 		]);
 
 		$this->forge->addKey('id_penjualan', TRUE);
-    $this->forge->addForeignKey('user_id', 'users', 'user_id', 'NO ACTION', 'NO ACTION');
+		$this->forge->addForeignKey('user_id', 'users', 'user_id', 'CASCADE', 'SET NULL');
 		$this->forge->createTable('tb_penjualan', TRUE);
 	}
 

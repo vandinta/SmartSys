@@ -31,8 +31,56 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 // $routes->get('/', 'Home::index');
 
+// dahboard
 $routes->get("/", "AuthController::index");
+
+// proses login
 $routes->post("/login", "AuthController::login");
+$routes->get("/logout", "AuthController::logout");
+
+$routes->group('/datakategori', static function ($routes) {
+    $routes->get("", "KategoriController::index");
+    $routes->get("tambah", "KategoriController::create");
+    $routes->get("ubah/(:num)", "KategoriController::edit/$1");
+    $routes->post("input", "KategoriController::save");
+    $routes->post("edit/(:num)", "KategoriController::update/$1");
+    $routes->delete("(:num)", "KategoriController::delete/$1");
+});
+
+$routes->group('/databarang', static function ($routes) {
+    $routes->get("", "BarangController::index");
+    $routes->get("tambah", "BarangController::create");
+    $routes->get("ubah/(:num)", "BarangController::edit/$1");
+    $routes->post("input", "BarangController::save");
+    $routes->post("edit/(:num)", "BarangController::update/$1");
+    $routes->delete("(:num)", "BarangController::delete/$1");
+});
+
+$routes->group('/datausers', static function ($routes) {
+    $routes->get("", "AuthController::listUsers");
+    $routes->get("tambah", "AuthController::create");
+    $routes->get("ubah/(:num)", "AuthController::ubah/$1");
+    $routes->post("input", "AuthController::save");
+    $routes->post("edit/(:num)", "AuthController::ganti/$1");
+    $routes->delete("(:num)", "AuthController::delete/$1");
+});
+
+$routes->group('/datapenjualan', static function ($routes) {
+    $routes->get("", "PenjualanController::index");
+    $routes->get("tambah", "PenjualanController::create");
+    $routes->get("ubah/(:num)", "PenjualanController::edit/$1");
+    $routes->post("input", "PenjualanController::save");
+    $routes->post("edit/(:num)", "PenjualanController::update/$1");
+    $routes->delete("(:num)", "PenjualanController::delete/$1");
+});
+
+$routes->get("/datamodel", "AuthController::index");
+$routes->get("/prakiraan", "AuthController::index");
+$routes->get("/history", "AuthController::index");
+
+$routes->get("/setting/(:segment)", "AuthController::edit/$1");
+$routes->get("/karyawan", "AuthController::listKaryawan");
+$routes->post("/setting/edit/(:num)", "AuthController::update/$1");
 // $routes->get("/pages/index", "Pages::index");
 // $routes->get("/pages/about", "Pages::about");
 // $routes->get("/pages/contact", "Pages::contact");

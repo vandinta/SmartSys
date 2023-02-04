@@ -7,7 +7,7 @@
 		<?= $this->include("cms/layout/v_header") ?>
 	</head>
 	<body>
-		<div class="wrapper">
+		<div class="wrapper sidebar_minimize">
 			<!-- Navbar -->
 			<?= $this->include("cms/layout/v_navbar") ?>
 			<!-- End Navbar -->
@@ -20,15 +20,16 @@
 				<div class="content">
 					<?= $this->renderSection("content") ?>
 				</div>
-
+				
 				<!--   Footer  -->
 				<?= $this->include("cms/layout/v_footer") ?>
 				<!--   Footer End  -->
 			</div>
 		</div>
-
+		
 		<!--  JS  -->
 		<?= $this->include("cms/layout/v_js") ?>
+		<?= $this->renderSection("content_js") ?>
 		<!--  JS End  -->
 	</body>
 </html>

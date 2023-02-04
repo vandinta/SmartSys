@@ -14,11 +14,12 @@ class UsersModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['email', 'password', 'username', 'role', 'profile_picture', 'activation_status', 'created_at', 'updated_at'];
+    protected $allowedFields    = ['email', 'password', 'username', 'role', 'profile_picture', 'last_login', 'created_at', 'updated_at'];
 
     // Dates
     protected $useTimestamps = false;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
+
 }
