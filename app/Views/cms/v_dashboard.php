@@ -1,6 +1,6 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
 <?= $this->section("content") ?>
-<h2>Form Tambah Data Berita</h2>
-<h2>Form Tambah Data Berita</h2>
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+<center><h2>Ini Adalah Menu Dashboard</h2></center>
 <?= $this->endSection() ?>

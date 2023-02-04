@@ -31,14 +31,16 @@ class Users extends Migration
 			'profile_picture'      => [
 				'type'           => 'VARCHAR',
 				'constraint'     => 255,
+				'null'           => true,
 			],
 			'role'      => [
 				'type'          => 'ENUM("admin", "petugas", "superadmin")',
 				'default' 		=> 'petugas',
 				'null' 			=> false,
 			],
-			'activation_status'      => [
-				'type'           => 'BOOL',
+			'last_login'       => [
+				'type'           => 'DATETIME',
+				'null'           => true,
 			],
 			'created_at datetime default current_timestamp',
 			'updated_at datetime default current_timestamp on update current_timestamp',

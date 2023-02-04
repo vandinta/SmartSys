@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <!-- Icon Font Stylesheet -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -57,17 +57,23 @@
             </div>
             <form action="/login" method="post">
               <div class="form-floating mb-3">
-                <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                <input type="email" class="form-control" id="email" name="email" value="<?php if (isset($_COOKIE["email"])) {
+                                                                                          echo $_COOKIE["email"];
+                                                                                        } ?>" placeholder="name@example.com" required>
                 <label for="email">Email address</label>
               </div>
               <div class="form-floating mb-4">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                <input type="password" class="form-control" id="password" name="password" value="<?php if (isset($_COOKIE["password"])) {
+                                                                                                    $pwd = $_COOKIE["password"];
+                                                                                                    $rpwd = base64_decode($pwd);
+                                                                                                    echo $rpwd;
+                                                                                                  } ?>" placeholder="Password" required>
                 <label for="password">Password</label>
               </div>
               <div class="d-flex align-items-center justify-content-between mb-4">
                 <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                  <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                  <input type="checkbox" class="form-check-input" id="remember" name="remember" value="remember">
+                  <label class="form-check-label" for="exampleCheck1">Remember Me</label>
                 </div>
                 <a href="">Forgot Password</a>
               </div>
