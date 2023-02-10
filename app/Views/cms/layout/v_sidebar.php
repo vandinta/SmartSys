@@ -52,7 +52,7 @@
             <p>Data Penjualan</p>
           </a>
         </li>
-        <li class="nav-item <?= $menu == 'datamodel' ? 'active': '' ?>">
+        <li class="nav-item <?= $menu == 'datamodel' ? 'active': '' ?>" <?php if($_SESSION['role'] != "admin"){ echo "hidden";} ?>>
           <a href="#">
             <i class="fas fa-suitcase"></i>
             <p>Data Model</p>
@@ -76,7 +76,7 @@
             <p>Data Karyawan</p>
           </a>
         </li>
-        <li class="nav-item <?= $menu == 'history' ? 'active': '' ?>">
+        <li class="nav-item <?= $menu == 'history' ? 'active': '' ?>" <?php if($_SESSION['role'] != "admin"){ echo "hidden";} ?>>
           <a href="#">
             <i class="fas fa-history"></i>
             <p>History</p>

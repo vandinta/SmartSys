@@ -44,7 +44,9 @@
                     <th scope="row"><?= $no++ ?></th>
                     <td><?= $kyn["email"] ?></td>
                     <td><?= $kyn["username"] ?></td>
-                    <td><?= tgl_indonesia($kyn["last_login"]) ?></td>
+                    <td><?php if ($kyn["last_login"] != null) {
+                      echo tgl_indonesia($kyn["last_login"]);
+                    } ?></td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
