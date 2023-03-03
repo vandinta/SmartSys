@@ -40,3 +40,5 @@
 <script src="<?php echo base_url("Atlantis/assets/js/demo.js") ?>"></script>
 
 <script src="<?= base_url("sweetalert2/sweetalert2.all.min.js") ?>"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
