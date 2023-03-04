@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\BarangModel;
 use App\Models\KategoriModel;
+use App\Models\CartModel;
 use Firebase\JWT\JWT;
 
 class BarangController extends BaseController
@@ -12,6 +13,7 @@ class BarangController extends BaseController
     private $session;
     protected $barangmodel;
     protected $kategorimodel;
+    protected $cartmodel;
     protected $decoded;
 
     public function __construct()
@@ -29,6 +31,9 @@ class BarangController extends BaseController
 
         $this->barangmodel = new BarangModel();
         $this->kategorimodel = new KategoriModel();
+        $this->cartmodel = new Cartmodel();
+
+        $delete_all = $this->cartmodel->delete_all();
     }
 
     public function index()

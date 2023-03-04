@@ -73,7 +73,7 @@
             </div>
             <input type="hidden" id="jumlah_harga_hide" name="jumlah_harga_hide[]">
             <br>
-            <div>
+            <div class="card-action">
               <button type="submit" class="btn btn-outline-primary float-right mr-2"><i class="fa fa-plus"> Tambah</i></button>
             </div>
           </form>
@@ -102,16 +102,16 @@
           <div class="card-title">List Barang</div>
         </div>
         <div class="card-body">
-          <form action="<?php echo base_url('/datapenjualan/save') ?>" method="post" class="formtambahpenjualan">
+          <form action="<?php echo base_url('/datapenjualan/input') ?>" method="post" class="formtambahpenjualan">
             <?= csrf_field() ?>
             <table id="list_pembelian" class="table table-hover">
               <thead>
                 <tr>
-                  <th scope="col">No</th>
-                  <th scope="col">Barang</th>
-                  <th scope="col">Harga Satuan</th>
-                  <th scope="col">Banyak</th>
-                  <th scope="col">Jumlah</th>
+                  <th style="width: 3%; text-align:center;">No</th>
+                  <th style="width: 15%; text-align:center;">Barang</th>
+                  <th style="width: 15%; text-align:center;">Harga Satuan</th>
+                  <th style="width: 5%; text-align:center;">Banyak</th>
+                  <th style="width: 15%; text-align:center;">Jumlah</th>
                   <th style="width: 3%; text-align:center;">Aksi</th>
                 </tr>
               </thead>
@@ -119,12 +119,12 @@
                 <?php $no = 1; ?>
                 <?php foreach ($cart as $crt) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
-                    <td><?= $crt["nama_barang"] ?></td>
-                    <td><?= rupiah($crt["harga_jual"]) ?></td>
-                    <td><?= $crt["qty"] ?></td>
-                    <td><?= rupiah($crt["jumlah_harga"]) ?></td>
-                    <td>
+                    <th scope="row" style="text-align:center;"><?= $no++ ?></th>
+                    <td style="text-align:center;"><?= $crt["nama_barang"] ?></td>
+                    <td style="text-align:center;"><?= rupiah($crt["harga_jual"]) ?></td>
+                    <td style="text-align:center;"><?= $crt["qty"] ?></td>
+                    <td style="text-align:center;"><?= rupiah($crt["jumlah_harga"]) ?></td>
+                    <td style="text-align:center;">
                       <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $crt["id_cart"] ?>)" data-original-title="Hapus">
                         <i class="fa fa-times"></i>
                       </button>
@@ -134,7 +134,7 @@
               </tbody>
             </table>
             <br>
-            <div>
+            <div class="card-action">
               <button type="submit" class="btn btn-outline-success float-right mr-2 simpandata">Simpan</button>
               <a href="<?php echo base_url('/datapenjualan') ?>" type="button" class="btn btn-outline-danger float-right mr-2">Batal</a>
             </div>
@@ -176,7 +176,7 @@
   <?php if (session()->getFlashdata('gagal_tambah') != NULL) { ?>
     Swal.fire({
       icon: 'error',
-      title: 'Data Gagal Ditambahkan!',
+      title: 'Data List Barang Kosong!',
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>

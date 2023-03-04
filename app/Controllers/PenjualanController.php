@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\PenjualanModel;
 use App\Models\BarangModel;
 use App\Models\CartModel;
+use App\Models\OrderModel;
 use Firebase\JWT\JWT;
 
 class PenjualanController extends BaseController
@@ -14,11 +15,12 @@ class PenjualanController extends BaseController
     protected $penjualanmodel;
     protected $barangmodel;
     protected $cartmodel;
+    protected $ordermodel;
     protected $decoded;
 
     public function __construct()
     {
-        helper(['cookie', 'rupiah']);
+        helper(['cookie', 'date', 'tgl_indo', 'rupiah']);
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -32,6 +34,7 @@ class PenjualanController extends BaseController
         $this->penjualanmodel = new PenjualanModel();
         $this->barangmodel = new Barangmodel();
         $this->cartmodel = new Cartmodel();
+        $this->ordermodel = new Ordermodel();
     }
 
     public function index()
@@ -83,14 +86,14 @@ class PenjualanController extends BaseController
 
                 $harga['total_harga'] = $total_harga_final;
             }
-        }else{
+        } else {
             $harga['total_harga'] = 0;
         }
 
         $data = [
             "menu" => "datapenjualan",
             "submenu" => " ",
-            "title" => "Tambah Data Barang",
+            "title" => "Tambah Data Penjualan",
             "barang" => $this->barangmodel->findAll(),
             "cart" => $this->cartmodel->join('tb_barang', 'tb_barang.id_barang=cart.id_barang', 'left')->findAll(),
             "harga" => $harga,
@@ -139,7 +142,58 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
+        $cart = $this->cartmodel->findAll();
+
+        if ($cart == null) {
+            session()->setFlashdata("gagal_tambah", "Data List Barang Kosong");
+            return redirect()->to("/datapenjualan/tambah");
+        }
+
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d H:i:s", $t);
+        $tanggal = tgl_indonesia($time);
+
+        $nama_penjualan = "Penjualan Pada Hari " . $tanggal;
+
+        $user_id = $this->decoded->uid;
         
+        $total_harga_raw = 0;
+        $total_harga_final = 0;
+
+        if ($cart != null) {
+            for ($i = 0; $i < count($cart); $i++) {
+                $total_harga_raw += $cart[$i]['jumlah_harga'];
+                $total_harga_final = $total_harga_raw;
+
+                $harga = $total_harga_final;
+            }
+        } else {
+            $harga = 0;
+        }
+
+        $data_penjualan = [
+            "user_id" => $user_id,
+            "nama_penjualan" => $nama_penjualan,
+            "total_harga" => $harga,
+        ];
+
+        $this->penjualanmodel->save($data_penjualan);
+        $id_penjualan = $this->penjualanmodel->insertID;
+
+        for ($i = 0; $i < count($cart); $i++) {
+            $data_order = [
+                "id_penjualan" => $id_penjualan,
+                "id_barang" => $cart[$i]['id_barang'],
+                "jumlah_barang" => $cart[$i]['qty'],
+            ];
+
+            $this->ordermodel->save($data_order);
+        }
+
+        $delete_all = $this->cartmodel->delete_all();
+
+        session()->setFlashdata("berhasil_tambah", "Data Penjualan Berhasil Ditambahkan");
+        return redirect()->to("/datapenjualan");
     }
 
     public function edit($id)
