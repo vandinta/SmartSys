@@ -21,6 +21,11 @@ class Penjualan extends Migration
 				'unsigned'       => true,
 				'null'			=> true,
 			],
+			'nama_penjualan'       => [
+				'type'           => 'VARCHAR',
+				'constraint'     => 255,
+				'null'           => false,
+			],
 			'total_harga'       => [
 				'type'           => 'VARCHAR',
 				'constraint'     => 255,

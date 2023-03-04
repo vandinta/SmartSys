@@ -4,12 +4,14 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\UsersModel;
+use App\Models\CartModel;
 use Firebase\JWT\JWT;
 
 class AuthController extends BaseController
 {
     private $session;
     protected $usersmodel;
+    protected $cartmodel;
     protected $decoded;
 
     public function __construct()
@@ -18,6 +20,7 @@ class AuthController extends BaseController
 
         $this->session = \Config\Services::session();
         $this->usersmodel = new UsersModel();
+        $this->cartmodel = new Cartmodel();
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -25,6 +28,8 @@ class AuthController extends BaseController
 
         $token = get_cookie("access_token");
         $this->decoded = JWT::decode($token, 'JWT_SECRET', ['HS256']);
+
+        $delete_all = $this->cartmodel->delete_all();
     }
 
     public function index()

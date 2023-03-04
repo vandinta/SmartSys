@@ -67,11 +67,13 @@ $routes->group('/datausers', static function ($routes) {
 
 $routes->group('/datapenjualan', static function ($routes) {
     $routes->get("", "PenjualanController::index");
+    $routes->post("input_cart", "PenjualanController::input_cart");
     $routes->get("tambah", "PenjualanController::create");
     $routes->get("ubah/(:num)", "PenjualanController::edit/$1");
     $routes->post("input", "PenjualanController::save");
     $routes->post("edit/(:num)", "PenjualanController::update/$1");
     $routes->delete("(:num)", "PenjualanController::delete/$1");
+    $routes->delete("delete_cart/(:num)", "PenjualanController::delete_cart/$1");
 });
 
 $routes->get("/datamodel", "AuthController::index");

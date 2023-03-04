@@ -4,12 +4,14 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\KategoriModel;
+use App\Models\CartModel;
 use Firebase\JWT\JWT;
 
 class KategoriController extends BaseController
 {
     private $session;
     protected $kategorimodel;
+    protected $cartmodel;
     protected $decoded;
 
     public function __construct()
@@ -26,6 +28,9 @@ class KategoriController extends BaseController
         $this->session = \Config\Services::session();
 
         $this->kategorimodel = new KategoriModel();
+        $this->cartmodel = new Cartmodel();
+
+        $delete_all = $this->cartmodel->delete_all();
     }
 
     public function index()
