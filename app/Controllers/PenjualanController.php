@@ -113,8 +113,14 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
+        $id = $this->request->getVar("id_barang");
+
+        $get = $this->barangmodel->where('id_barang', $id)->first();
+
         $data = [
             "id_barang" => $this->request->getVar("id_barang"),
+            "harga_beli_barang" => $get['harga_beli'],
+            "harga_jual_barang" => $get['harga_jual'],
             "qty" => $this->request->getVar("qty"),
             "jumlah_harga" => $this->request->getVar("jumlah_harga_hide"),
         ];
@@ -156,7 +162,7 @@ class PenjualanController extends BaseController
         $nama_penjualan = "Penjualan Pada Hari " . $tanggal;
 
         $user_id = $this->decoded->uid;
-        
+
         $total_harga_raw = 0;
         $total_harga_final = 0;
 
@@ -184,10 +190,19 @@ class PenjualanController extends BaseController
             $data_order = [
                 "id_penjualan" => $id_penjualan,
                 "id_barang" => $cart[$i]['id_barang'],
+                "harga_beli_barang" => $cart[$i]['harga_beli_barang'],
+                "harga_jual_barang" => $cart[$i]['harga_jual_barang'],
                 "jumlah_barang" => $cart[$i]['qty'],
             ];
 
             $this->ordermodel->save($data_order);
+
+            $cek_barang = $this->barangmodel->where('id_barang', $cart[$i]['id_barang'])->first();
+            $cek_barang['stok_barang'] -= $cart[$i]['qty'];
+            $data = [
+                'stok_barang' => $cek_barang['stok_barang'],
+            ];
+            $this->barangmodel->update($cart[$i]['id_barang'], $data);
         }
 
         $delete_all = $this->cartmodel->delete_all();
@@ -206,18 +221,34 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $data_penjualan = $this->penjualanmodel->where('id_penjualan', $id)->first();
+        $wkt_penjualan = strtotime($data_penjualan["created_at"]);
+        $waktu_penjualan = date("Y-m-d", $wkt_penjualan);
+
+        if ($waktu_penjualan == $time) {
+            $waktu = 1;
+        }else{
+            $waktu = 0;
+        }
+
         $data = [
             "menu" => "datapenjualan",
             "submenu" => " ",
-            "title" => "Data Penjualan",
-            "penjualan" => $this->penjualanmodel->where('id_penjualan', $id)->first(),
+            "title" => "Detail Data Penjualan",
+            "expired" => $waktu,
+            "barang" => $this->barangmodel->findAll(),
+            "penjualan" => $this->penjualanmodel->where('id_penjualan', $id)->join('users', 'users.user_id=tb_penjualan.user_id', 'left')->first(),
+            "order" => $this->ordermodel->where('id_penjualan', $id)->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->findAll(),
             "validation" => \Config\Services::validation()
         ];
 
         return view("cms/penjualan/v_editdata", $data);
     }
 
-    public function update($id)
+    public function input_order()
     {
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -227,91 +258,93 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
-        $rules = [
-            'id_kategori' => 'required',
-            'nama_barang' => 'required|max_length[255]',
-            'stok_barang' => 'required|numeric',
-            'harga_beli' => 'required|numeric',
-            'harga_jual' => 'required|numeric',
+        $id_penjualan = $this->request->getVar("id_penjualan");
+
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $data_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
+        $wkt_penjualan = strtotime($data_penjualan["created_at"]);
+        $waktu_penjualan = date("Y-m-d", $wkt_penjualan);
+
+        if ($waktu_penjualan != $time) {
+            return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
+        }
+
+        $id_barang = $this->request->getVar("id_barang");
+
+        $get = $this->barangmodel->where('id_barang', $id_barang)->first();
+
+        $data = [
+            "id_penjualan" => $id_penjualan,
+            "id_barang" => $id_barang,
+            "harga_beli_barang" => $get['harga_beli'],
+            "harga_jual_barang" => $get['harga_jual'],
+            "jumlah_barang" => $this->request->getVar("qty"),
+            "jumlah_harga" => $this->request->getVar("jumlah_harga_barang"),
         ];
 
-        $rules_image = [
-            "image_barang" => "uploaded[image_barang]|is_image[image_barang]|mime_in[image_barang,image/jpg,image/jpeg,image/png]|max_size[image_barang,4000]",
+        $this->ordermodel->save($data);
+
+        $cek_barang = $this->barangmodel->where('id_barang', $id_barang)->first();
+        $cek_barang['stok_barang'] -= $data['jumlah_barang'];
+        $data_barang = [
+            'stok_barang' => $cek_barang['stok_barang'],
+        ];
+        $this->barangmodel->update($id_barang, $data_barang);
+
+        $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
+        $cek_penjualan['total_harga'] += $data['jumlah_harga'];
+        $data_penjualan = [
+            'total_harga' => $cek_penjualan['total_harga'],
+        ];
+        $this->penjualanmodel->update($id_penjualan, $data_penjualan);
+
+        session()->setFlashdata("berhasil_tambah_order", "Data Barang Berhasil Ditambahkan");
+        return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
+    }
+
+    public function update_penjualan($id)
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $data_penjualan = $this->penjualanmodel->where('id_penjualan', $id)->first();
+        $wkt_penjualan = strtotime($data_penjualan["created_at"]);
+        $waktu_penjualan = date("Y-m-d", $wkt_penjualan);
+
+        if ($waktu_penjualan != $time) {
+            return redirect()->to("/datapenjualan/ubah/" . $id);
+        }
+
+        $rules = [
+            'nama_penjualan' => 'required|max_length[255]'
         ];
 
         $messages = [
-            "id_kategori" => [
-                "required" => "{field} tidak boleh kosong",
-            ],
-            "nama_barang" => [
+            "nama_penjualan" => [
                 "required" => "{field} tidak boleh kosong",
                 "max_length" => "{field} maksimal 255 karakter",
             ],
-            "stok_barang" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
-            ],
-            "harga_beli" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
-            ],
-            "harga_jual" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
-            ]
         ];
-
-        $messages_image = [
-            "image_barang" => [
-                'uploaded' => '{field} tidak boleh kosong',
-                'mime_in' => '{field} Harus Berupa jpg, jpeg, png atau webp',
-                'max_size' => 'Ukuran {field} Maksimal 4 MB'
-            ],
-        ];
-
-        $cek = $this->penjualanmodel->where('id_barang', $id)->first();
 
         if ($this->validate($rules, $messages)) {
-            if ($this->validate($rules_image, $messages_image)) {
-                $oldimagebarang = $cek['image_barang'];
-                $dataimagebarang = $this->request->getFile('image_barang');
-                if ($dataimagebarang->isValid() && !$dataimagebarang->hasMoved()) {
-                    if (file_exists("assets/image/barang/" . $oldimagebarang)) {
-                        unlink("assets/image/barang/" . $oldimagebarang);
-                    }
-                    $imagebarangFileName = $dataimagebarang->getRandomName();
-                    $dataimagebarang->move('assets/image/barang/', $imagebarangFileName);
-                } else {
-                    $imagebarangFileName = $oldimagebarang['profile_picture'];
-                }
-
-                $data = [
-                    "id_barang" => $id,
-                    "id_kategori" => $this->request->getVar("id_kategori"),
-                    "nama_barang" => $this->request->getVar("nama_barang"),
-                    "stok_barang" => $this->request->getVar("stok_barang"),
-                    "harga_beli" => $this->request->getVar("harga_beli"),
-                    "harga_jual" => $this->request->getVar("harga_jual"),
-                    "image_barang" => $imagebarangFileName
-                ];
-
-                $this->penjualanmodel->save($data);
-                session()->setFlashdata("berhasil_diubah", "Data Barang Berhasil Ditubah");
-                return redirect()->to("/databarang/ubah/" . "/" . $id);
-            }
-
             $data = [
-                "id_barang" => $id,
-                "id_kategori" => $this->request->getVar("id_kategori"),
-                "nama_barang" => $this->request->getVar("nama_barang"),
-                "stok_barang" => $this->request->getVar("stok_barang"),
-                "harga_beli" => $this->request->getVar("harga_beli"),
-                "harga_jual" => $this->request->getVar("harga_jual"),
+                "id_penjualan" => $id,
+                "nama_penjualan" => $this->request->getVar("nama_penjualan"),
             ];
 
             $this->penjualanmodel->save($data);
-            session()->setFlashdata("berhasil_diubah", "Data Barang Berhasil Ditubah");
-            return redirect()->to("/databarang/ubah/" . "/" . $id);
+            session()->setFlashdata("berhasil_diubah", "Data Penjualan Berhasil Ditubah");
+            return redirect()->to("/datapenjualan/ubah/" . "/" . $id);
         } else {
             $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
@@ -321,14 +354,150 @@ class PenjualanController extends BaseController
         }
     }
 
+    public function update_order()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
+        $id_penjualan = $this->request->getVar("id_penjualan");
+
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $data_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
+        $wkt_penjualan = strtotime($data_penjualan["created_at"]);
+        $waktu_penjualan = date("Y-m-d", $wkt_penjualan);
+
+        if ($waktu_penjualan != $time) {
+            return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
+        }
+
+        $id_barang = $this->request->getVar("id_barang");
+        $id_order = $this->request->getVar("id_order");
+
+        $cek = $this->ordermodel->where('id_order', $id_order)->first();
+
+        $rules = [
+            'qty' => 'required'
+        ];
+
+        $messages = [
+            "qty" => [
+                "required" => "{field} tidak boleh kosong",
+            ],
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $qty = $this->request->getVar("qty");
+            $data = [
+                "id_order" => $id_order,
+                "jumlah_barang" => $qty,
+            ];
+
+            $this->ordermodel->save($data);
+
+            if ($cek['jumlah_barang'] > $qty) {
+                $selisih = $cek['jumlah_barang'] - $qty;
+
+                $cek_barang = $this->barangmodel->where('id_barang', $id_barang)->first();
+                $cek_barang['stok_barang'] = $cek_barang['stok_barang'] + $selisih;
+                $data_barang = [
+                    'stok_barang' => $cek_barang['stok_barang'],
+                ];
+                $this->barangmodel->update($id_barang, $data_barang);
+
+                $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
+
+                $selisih_harga = $cek['harga_jual_barang'] * $selisih;
+                $harga = $cek_penjualan['total_harga'] - $selisih_harga;
+                $data_penjualan = [
+                    'total_harga' => $harga,
+                ];
+                $this->penjualanmodel->update($id_penjualan, $data_penjualan);
+            } elseif ($cek['jumlah_barang'] < $qty) {
+                $selisih = $qty - $cek['jumlah_barang'];
+
+                $cek_barang = $this->barangmodel->where('id_barang', $id_barang)->first();
+                $cek_barang['stok_barang'] -= $selisih;
+                $data_barang = [
+                    'stok_barang' => $cek_barang['stok_barang'],
+                ];
+                $this->barangmodel->update($id_barang, $data_barang);
+
+                $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
+
+                $selisih_harga = $cek['harga_jual_barang'] * $selisih;
+                $harga = $cek_penjualan['total_harga'] + $selisih_harga;
+                $data_penjualan = [
+                    'total_harga' => $harga,
+                ];
+                $this->penjualanmodel->update($id_penjualan, $data_penjualan);
+            }
+
+            session()->setFlashdata("berhasil_diubah_order", "Data Penjualan Berhasil Ditubah");
+            return redirect()->to("/datapenjualan/ubah/" . "/" . $id_penjualan);
+        } else {
+            $kesalahan = \Config\Services::validation();
+            $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
+            return redirect()
+                ->to("/databarang/ubah/" . "/" . $id_penjualan)
+                ->with("validation", $kesalahan);
+        }
+    }
+
+    public function delete_order($id = null)
+    {
+        $cek = $this->ordermodel->where('id_order', $id)->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->first();
+
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $data_penjualan = $this->penjualanmodel->where('id_penjualan', $cek['id_penjualan'])->first();
+        $wkt_penjualan = strtotime($data_penjualan["created_at"]);
+        $waktu_penjualan = date("Y-m-d", $wkt_penjualan);
+
+        if ($waktu_penjualan != $time) {
+            return redirect()->to("/datapenjualan/ubah/" . $cek['id_penjualan']);
+        }
+
+        if ($cek != null) {
+            $cek_barang = $this->barangmodel->where('id_barang', $cek['id_barang'])->first();
+            $cek_barang['stok_barang'] = $cek_barang['stok_barang'] + $cek['jumlah_barang'];
+            $data_barang = [
+                'stok_barang' => $cek_barang['stok_barang'],
+            ];
+            $this->barangmodel->update($cek['id_barang'], $data_barang);
+
+            $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $cek['id_penjualan'])->first();
+
+            $selisih_harga = $cek['harga_jual_barang'] * $cek['jumlah_barang'];
+            $harga = $cek_penjualan['total_harga'] - $selisih_harga;
+            $data_penjualan = [
+                'total_harga' => $harga,
+            ];
+            $this->penjualanmodel->update($cek['id_penjualan'], $data_penjualan);
+            if ($this->ordermodel->delete($id)) {
+                return $this->response->setJSON([
+                    'error' => false,
+                    'message' => 'Data ' . $cek['nama_barang'] . ' Berhasil Dihapus!'
+                ]);
+            }
+        }
+    }
+
     public function delete($id = null)
     {
-        $cek = $this->penjualanmodel->where('id_barang', $id)->first();
+        $cek = $this->penjualanmodel->where('id_penjualan', $id)->first();
 
         if ($this->penjualanmodel->delete($id)) {
             return $this->response->setJSON([
                 'error' => false,
-                'message' => 'Data Barang ' . $cek['nama_barang'] . ' Berhasil Dihapus!'
+                'message' => 'Data ' . $cek['nama_penjualan'] . ' Berhasil Dihapus!'
             ]);
         }
     }

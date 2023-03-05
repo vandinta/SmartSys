@@ -14,7 +14,7 @@ class CartModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_barang', 'qty', 'jumlah_harga', 'created_at', 'updated_at'];
+    protected $allowedFields    = ['id_barang', 'harga_beli_barang', 'harga_jual_barang', 'qty', 'jumlah_harga', 'created_at', 'updated_at'];
 
     // Dates
     protected $useTimestamps = false;

@@ -32,6 +32,16 @@ class Order extends Migration
 				'constraint'     => 255,
 				'null'           => false,
 			],
+			'harga_beli_barang'       => [
+				'type'           => 'VARCHAR',
+				'constraint'     => 255,
+				'null'           => false,
+			],
+			'harga_jual_barang'       => [
+				'type'           => 'VARCHAR',
+				'constraint'     => 255,
+				'null'           => false,
+			],
 			'created_at datetime default current_timestamp',
 			'updated_at datetime default current_timestamp on update current_timestamp',
 		]);
