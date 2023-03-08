@@ -7,6 +7,9 @@ use App\Models\BarangModel;
 use App\Models\KategoriModel;
 use App\Models\CartModel;
 use Firebase\JWT\JWT;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Libraries\Pdfgenerator;
 
 class BarangController extends BaseController
 {
@@ -18,7 +21,7 @@ class BarangController extends BaseController
 
     public function __construct()
     {
-        helper('cookie');
+        helper(['cookie', 'rupiah']);
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -338,6 +341,10 @@ class BarangController extends BaseController
 
     public function delete($id = null)
     {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
         $cek = $this->barangmodel->where('id_barang', $id)->first();
 
         if ($this->barangmodel->delete($id)) {
@@ -345,6 +352,249 @@ class BarangController extends BaseController
                 'error' => false,
                 'message' => 'Data Barang ' . $cek['nama_barang'] . ' Berhasil Dihapus!'
             ]);
+        }
+    }
+
+    public function exportExcel()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $barang = $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Nama Barang');
+        $sheet->setCellValue('C1', 'Kategori');
+        $sheet->setCellValue('D1', 'Stok');
+        $sheet->setCellValue('E1', 'Harga Beli');
+        $sheet->setCellValue('F1', 'Harga Jual');
+
+        $kolom = 2;
+        foreach ($barang as $value) {
+            $sheet->setCellValue('A' . $kolom, ($kolom - 1));
+            $sheet->setCellValue('B' . $kolom, $value['nama_barang']);
+            $sheet->setCellValue('C' . $kolom, $value['nama_kategori']);
+            $sheet->setCellValue('D' . $kolom, $value['stok_barang']);
+            $sheet->setCellValue('E' . $kolom, $value['harga_beli']);
+            $sheet->setCellValue('F' . $kolom, $value['harga_jual']);
+            $kolom++;
+        }
+
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        $spreadsheet->getActiveSheet()->getStyle('A1:F1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('4040ff');
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ]
+            ]
+        ];
+        $sheet->getStyle('A1:F' . ($kolom - 1))->applyFromArray($styleArray);
+
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+
+        $writer = new Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename=data-barang.xlsx');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
+    }
+
+    public function exportCsv()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $barang = $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Nama Barang');
+        $sheet->setCellValue('C1', 'Kategori');
+        $sheet->setCellValue('D1', 'Stok');
+        $sheet->setCellValue('E1', 'Harga Beli');
+        $sheet->setCellValue('F1', 'Harga Jual');
+
+        $kolom = 2;
+        foreach ($barang as $value) {
+            $sheet->setCellValue('A' . $kolom, ($kolom - 1));
+            $sheet->setCellValue('B' . $kolom, $value['nama_barang']);
+            $sheet->setCellValue('C' . $kolom, $value['nama_kategori']);
+            $sheet->setCellValue('D' . $kolom, $value['stok_barang']);
+            $sheet->setCellValue('E' . $kolom, $value['harga_beli']);
+            $sheet->setCellValue('F' . $kolom, $value['harga_jual']);
+            $kolom++;
+        }
+
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        $spreadsheet->getActiveSheet()->getStyle('A1:F1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('4040ff');
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ]
+            ]
+        ];
+        $sheet->getStyle('A1:F' . ($kolom - 1))->applyFromArray($styleArray);
+
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename=data-barang.csv');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
+    }
+
+    public function exportPdf()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $Pdfgenerator = new Pdfgenerator();
+
+        $file_pdf = 'data-barang';
+        $paper = 'A4';
+        $orientation = "portrait";
+
+        $data = [
+            "title" => "Data Barang",
+            "barang" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->findAll()
+        ];
+
+        $html = view("cms/barang/v_pdf", $data);
+
+        $output = $Pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+        file_put_contents('data-barang.pdf', $output);
+        exit();
+    }
+
+    public function import()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $file = $this->request->getFile('file_import');
+        $extension = $file->getClientExtension();
+        if ($extension == 'xlsx' || $extension == 'xls' || $extension == 'csv') {
+            if ($extension == 'xlsx' || $extension == 'xls') {
+                if ($extension == 'xlsx') {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                } else {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                }
+                $spreadsheet = $reader->load($file);
+                $barang = $spreadsheet->getActiveSheet()->toArray();
+                foreach ($barang as $key => $value) {
+                    if ($key == 0) {
+                        continue;
+                    }
+                    $namabarang = $value[1];
+                    $kategoribarang = $value[2];
+                    $cekdata = $this->barangmodel->where('nama_barang', $namabarang)->first();
+                    $cekkategori = $this->kategorimodel->findAll();
+                    for ($i = 0; $i < count($cekkategori); $i++) {
+                        if ($cekkategori[$i]['nama_kategori'] == $kategoribarang) {
+                            $kategoribarang = $cekkategori[$i]['id_kategori'];
+                        }
+                    }
+                    $data = [
+                        'id_kategori' => $kategoribarang,
+                        'nama_barang' => $namabarang,
+                        'stok_barang' => $value[3],
+                        'harga_beli' => $value[4],
+                        'harga_jual' => $value[5]
+                    ];
+                    if ($cekdata == null) {
+                        $this->barangmodel->insert($data);
+                    }
+                }
+                $this->session->setFlashdata('berhasil_import', 'Data Berhasil Diimport!');
+                return redirect()->to("/databarang");
+            } else {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                $spreadsheet = $reader->load($file);
+                $barang = $spreadsheet->getActiveSheet()->toArray();
+                foreach ($barang as $key => $value) {
+                    if ($key == 0) {
+                        continue;
+                    }
+
+                    if ($value[1] != 0) {
+                        $namabarang = $value[1];
+                        $kategoribarang = $value[2];
+                        $cekdata = $this->barangmodel->where('nama_barang', $namabarang)->first();
+                        $cekkategori = $this->kategorimodel->findAll();
+                        for ($i = 0; $i < count($cekkategori); $i++) {
+                            if ($cekkategori[$i]['nama_kategori'] == $kategoribarang) {
+                                $kategoribarang = $cekkategori[$i]['id_kategori'];
+                            }
+                        }
+                        $data = [
+                            'id_kategori' => $kategoribarang,
+                            'nama_barang' => $namabarang,
+                            'stok_barang' => $value[3],
+                            'harga_beli' => $value[4],
+                            'harga_jual' => $value[5]
+                        ];
+                        if ($cekdata == null) {
+                            $this->barangmodel->insert($data);
+                        }
+                    } else {
+                        $rawbarang = $value[0];
+                        $cleanbarang = explode(",", $rawbarang);
+                        $namabarang = $cleanbarang[1];
+                        $kategoribarang = $cleanbarang[2];
+                        $cekdata = $this->barangmodel->where('nama_barang', $namabarang)->first();
+                        $cekkategori = $this->kategorimodel->findAll();
+                        for ($i = 0; $i < count($cekkategori); $i++) {
+                            if ($cekkategori[$i]['nama_kategori'] == $kategoribarang) {
+                                $kategoribarang = $cekkategori[$i]['id_kategori'];
+                            }
+                        }
+                        $data = [
+                            'id_kategori' => $kategoribarang,
+                            'nama_barang' => $namabarang,
+                            'stok_barang' => $cleanbarang[3],
+                            'harga_beli' => $cleanbarang[4],
+                            'harga_jual' => $cleanbarang[5]
+                        ];
+                        if ($cekdata == null) {
+                            $this->barangmodel->insert($data);
+                        }
+                    }
+                }
+                $this->session->setFlashdata('berhasil_import', 'Data Berhasil Diimport!');
+                return redirect()->to("/databarang");
+            }
+        } else {
+            $this->session->setFlashdata('gagal_import', 'Data anda tidak sesuai');
+            return redirect()->to("/databarang");
         }
     }
 }

@@ -8,7 +8,9 @@
         "php": "^7.4 || ^8.0",
         "codeigniter4/framework": "^4.0",
         "firebase/php-jwt": "5.5",
-        "select2/select2": "^4.0"
+        "select2/select2": "^4.0",
+        "phpoffice/phpspreadsheet": "^1.28",
+        "dompdf/dompdf": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",

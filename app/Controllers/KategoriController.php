@@ -6,6 +6,9 @@ use App\Controllers\BaseController;
 use App\Models\KategoriModel;
 use App\Models\CartModel;
 use Firebase\JWT\JWT;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Libraries\Pdfgenerator;
 
 class KategoriController extends BaseController
 {
@@ -17,14 +20,14 @@ class KategoriController extends BaseController
     public function __construct()
     {
         helper('cookie');
-        
+
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
         }
-        
+
         $token = get_cookie("access_token");
         $this->decoded = JWT::decode($token, 'JWT_SECRET', ['HS256']);
-        
+
         $this->session = \Config\Services::session();
 
         $this->kategorimodel = new KategoriModel();
@@ -197,6 +200,10 @@ class KategoriController extends BaseController
 
     public function delete($id = null)
     {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
         $cek = $this->kategorimodel->where('id_kategori', $id)->first();
 
         if ($this->kategorimodel->delete($id)) {
@@ -204,6 +211,192 @@ class KategoriController extends BaseController
                 'error' => false,
                 'message' => 'Data Kategori ' . $cek['nama_kategori'] . ' Berhasil Dihapus!'
             ]);
+        }
+    }
+
+    public function exportExcel()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $kategori = $this->kategorimodel->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Nama Kategori');
+
+        $kolom = 2;
+        foreach ($kategori as $value) {
+            $sheet->setCellValue('A' . $kolom, ($kolom - 1));
+            $sheet->setCellValue('B' . $kolom, $value['nama_kategori']);
+            $kolom++;
+        }
+
+        $sheet->getStyle('A1:B1')->getFont()->setBold(true);
+        $spreadsheet->getActiveSheet()->getStyle('A1:B1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('4040ff');
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ]
+            ]
+        ];
+        $sheet->getStyle('A1:B' . ($kolom - 1))->applyFromArray($styleArray);
+
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+
+        $writer = new Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename=data-kategori-barang.xlsx');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
+    }
+
+    public function exportCsv()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $kategori = $this->kategorimodel->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Nama Kategori');
+
+        $kolom = 2;
+        foreach ($kategori as $value) {
+            $sheet->setCellValue('A' . $kolom, ($kolom - 1));
+            $sheet->setCellValue('B' . $kolom, $value['nama_kategori']);
+            $kolom++;
+        }
+
+        $sheet->getStyle('A1:B1')->getFont()->setBold(true);
+        $spreadsheet->getActiveSheet()->getStyle('A1:B1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('4040ff');
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ]
+            ]
+        ];
+        $sheet->getStyle('A1:B' . ($kolom - 1))->applyFromArray($styleArray);
+
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename=data-kategori-barang.csv');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
+    }
+
+    public function exportPdf()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $Pdfgenerator = new Pdfgenerator();
+
+        $file_pdf = 'data-kategori-barang';
+        $paper = 'A4';
+        $orientation = "portrait";
+
+        $data = [
+            "title" => "Data Kategori Barang",
+            "kategori" => $this->kategorimodel->findAll(),
+        ];
+
+        $html = view("cms/kategori/v_pdf", $data);
+
+        $output = $Pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+        file_put_contents('data-kategori-barang.pdf', $output);
+        exit();
+    }
+
+    public function import()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $file = $this->request->getFile('file_import');
+        $extension = $file->getClientExtension();
+        if ($extension == 'xlsx' || $extension == 'xls' || $extension == 'csv') {
+            if ($extension == 'xlsx' || $extension == 'xls') {
+                if ($extension == 'xlsx') {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                } else {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                }
+                $spreadsheet = $reader->load($file);
+                $kategori = $spreadsheet->getActiveSheet()->toArray();
+                foreach ($kategori as $key => $value) {
+                    if ($key == 0) {
+                        continue;
+                    }
+                    $namakategori = $value[1];
+                    $cekdata = $this->kategorimodel->where('nama_kategori', $namakategori)->first();
+                    $data = [
+                        'nama_kategori' => $namakategori
+                    ];
+                    if ($cekdata == null) {
+                        $this->kategorimodel->insert($data);
+                    }
+                }
+                $this->session->setFlashdata('berhasil_import', 'Data Berhasil Diimport!');
+                return redirect()->to("/datakategori");
+            } else {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                $spreadsheet = $reader->load($file);
+                $kategori = $spreadsheet->getActiveSheet()->toArray();
+                foreach ($kategori as $key => $value) {
+                    if ($key == 0) {
+                        continue;
+                    }
+
+                    if ($value[1] != 0) {
+                        $namakategori = $value[1];
+                        $cekdata = $this->kategorimodel->where('nama_kategori', $namakategori)->first();
+                        $data = [
+                            'nama_kategori' => $namakategori
+                        ];
+                        if ($cekdata == null) {
+                            $this->kategorimodel->insert($data);
+                        }
+                    } else {
+                        $rawkategori = $value[0];
+                        $cleankategori = explode(",", $rawkategori);
+                        $namakategori = $cleankategori[1];
+                        $cekdata = $this->kategorimodel->where('nama_kategori', $namakategori)->first();
+                        $data = [
+                            'nama_kategori' => $namakategori
+                        ];
+                        if ($cekdata == null) {
+                            $this->kategorimodel->insert($data);
+                        }
+                    }
+                }
+                $this->session->setFlashdata('berhasil_import', 'Data Berhasil Diimport!');
+                return redirect()->to("/datakategori");
+            }
+        } else {
+            $this->session->setFlashdata('gagal_import', 'Data anda tidak sesuai');
+            return redirect()->to("/datakategori");
         }
     }
 }

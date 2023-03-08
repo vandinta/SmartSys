@@ -42,8 +42,12 @@ $routes->group('/datakategori', static function ($routes) {
     $routes->get("", "KategoriController::index");
     $routes->get("tambah", "KategoriController::create");
     $routes->get("ubah/(:num)", "KategoriController::edit/$1");
+    $routes->get("exportexcel", "KategoriController::exportExcel");
+    $routes->get("exportcsv", "KategoriController::exportCsv");
+    $routes->get("exportpdf", "KategoriController::exportPdf");
     $routes->post("input", "KategoriController::save");
     $routes->post("edit/(:num)", "KategoriController::update/$1");
+    $routes->post("import", "KategoriController::import");
     $routes->delete("(:num)", "KategoriController::delete/$1");
 });
 
@@ -51,8 +55,12 @@ $routes->group('/databarang', static function ($routes) {
     $routes->get("", "BarangController::index");
     $routes->get("tambah", "BarangController::create");
     $routes->get("ubah/(:num)", "BarangController::edit/$1");
+    $routes->get("exportexcel", "BarangController::exportExcel");
+    $routes->get("exportcsv", "BarangController::exportCsv");
+    $routes->get("exportpdf", "BarangController::exportPdf");
     $routes->post("input", "BarangController::save");
     $routes->post("edit/(:num)", "BarangController::update/$1");
+    $routes->post("import", "BarangController::import");
     $routes->delete("(:num)", "BarangController::delete/$1");
 });
 
@@ -67,13 +75,17 @@ $routes->group('/datausers', static function ($routes) {
 
 $routes->group('/datapenjualan', static function ($routes) {
     $routes->get("", "PenjualanController::index");
-    $routes->post("input_cart", "PenjualanController::input_cart");
     $routes->get("tambah", "PenjualanController::create");
     $routes->get("ubah/(:num)", "PenjualanController::edit/$1");
     $routes->post("input", "PenjualanController::save");
-    $routes->post("edit/(:num)", "PenjualanController::update/$1");
+    $routes->post("input_cart", "PenjualanController::input_cart");
+    $routes->post("input_order", "PenjualanController::input_order");
+    // $routes->post("edit/(:num)", "PenjualanController::update/$1");
+    $routes->post("ubah_penjualan/(:num)", "PenjualanController::update_penjualan/$1");
+    $routes->post("ubah_order", "PenjualanController::update_order");
     $routes->delete("(:num)", "PenjualanController::delete/$1");
     $routes->delete("delete_cart/(:num)", "PenjualanController::delete_cart/$1");
+    $routes->delete("delete_order/(:num)", "PenjualanController::delete_order/$1");
 });
 
 $routes->get("/datamodel", "AuthController::index");

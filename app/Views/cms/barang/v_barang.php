@@ -24,9 +24,17 @@
         <div class="card-header">
           <div class="d-flex align-items-center">
             <h4 class="card-title"><?= $title; ?></h4>
-            <a href="<?php echo base_url('/databarang/tambah') ?>" type="button" class="btn btn-primary btn-round ml-auto" <?php if ($_SESSION['role'] == "superadmin") {
-                                                                                                                              echo "hidden";
-                                                                                                                            } ?>><i class="fa fa-plus"></i>Tambah Data</a>
+            <div class="ml-auto">
+              <button type="button" class="btn btn-icon btn-round btn-info mr-1" data-toggle="modal" data-target="#importModal">
+                <i class="fa fa-sign-in-alt"></i>
+              </button>
+              <button type="button" class="btn btn-icon btn-round btn-info" data-toggle="modal" data-target="#exportModal">
+                <i class="fa fa-sign-out-alt"></i>
+              </button>
+            </div>
+            <a href="<?php echo base_url('/databarang/tambah') ?>" type="button" class="btn btn-primary btn-round ml-2" <?php if ($_SESSION['role'] == "superadmin") {
+                                                                                                                          echo "hidden";
+                                                                                                                        } ?>><i class="fa fa-plus"></i>Tambah Data</a>
           </div>
         </div>
         <div class="card-body">
@@ -85,6 +93,120 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Import -->
+<div class="modal fade" id="importModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="exampleModalLabel">Import Data Kategori</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h5>Template Data</h5>
+        <ul class="nav nav-pills nav-secondary nav-pills-no-bd nav-pills-icons justify-content-center" id="pills-tab-with-icon">
+          <li class="nav-item">
+            <a class="" href="<?= base_url('assets/template/barang/Template-Data-Barang.csv') ?>">
+              <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
+                <i class="fa fa-file-code"></i>
+                CSV
+              </button>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="" href="<?= base_url('assets/template/barang/Template-Data-Barang.xlsx') ?>">
+              <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
+                <i class="fa fa-file-excel"></i>
+                EXCEL
+              </button>
+            </a>
+          </li>
+        </ul>
+        <br>
+        <h6 class="float-right">*Tekan untuk mengunduh template</h6>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-round float-right mr-2" data-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary btn-round float-right mr-2" data-toggle="modal" data-target="#inputModal" data-dismiss="modal">Import Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End Modal Import -->
+
+<!-- Modal Export -->
+<div class="modal fade" id="exportModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Export Data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-pills nav-secondary nav-pills-no-bd nav-pills-icons justify-content-center" id="pills-tab-with-icon">
+          <li class="nav-item">
+            <a class="" href="<?= base_url('/databarang/exportcsv') ?>">
+              <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
+                <i class="fa fa-file-code"></i>
+                CSV
+              </button>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="" href="<?= base_url('/databarang/exportexcel') ?>">
+              <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
+                <i class="fa fa-file-excel"></i>
+                EXCEL
+              </button>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="" href="<?= base_url('/databarang/exportpdf') ?>">
+              <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
+                <i class="fa fa-file-pdf"></i>
+                PDF
+              </button>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End Modal Export -->
+
+<!-- Modal Input -->
+<div class="modal fade" id="inputModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="exampleModalLabel">Input File</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="<?php echo base_url('/databarang/import') ?>" method="post" enctype="multipart/form-data">
+        <?= csrf_field() ?>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="file_import">Import File</label>
+            <input type="file" class="form-control-file" id="file_import" name="file_import" required>
+            <br>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-danger float-right mr-2" data-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-outline-success float-right mr-2">Simpan</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- End Modal Input -->
 <?= $this->endSection() ?>
 
 <?= $this->section("content_js") ?>
@@ -160,6 +282,22 @@
     Swal.fire({
       icon: 'success',
       title: 'Data Berhasil Ditambahkan!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+  
+  <?php if (session()->getFlashdata('berhasil_import') != NULL) { ?>
+    Swal.fire({
+      icon: 'success',
+      title: 'Data Berhasil Diimport!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+
+  <?php if (session()->getFlashdata('gagal_import') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Data Anda Tidak Sesuai!',
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>

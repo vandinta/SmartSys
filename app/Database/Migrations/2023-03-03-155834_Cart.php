@@ -26,6 +26,16 @@ class Cart extends Migration
 			// 	'constraint'     => 255,
 			// 	'null'           => false,
 			// ],
+			'harga_beli_barang'       => [
+				'type'           => 'VARCHAR',
+				'constraint'     => 255,
+				'null'           => false,
+			],
+			'harga_jual_barang'       => [
+				'type'           => 'VARCHAR',
+				'constraint'     => 255,
+				'null'           => false,
+			],
 			'qty'       => [
 				'type'           => 'VARCHAR',
 				'constraint'     => 5,
