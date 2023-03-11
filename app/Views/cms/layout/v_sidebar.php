@@ -76,12 +76,12 @@
             <p>Data Karyawan</p>
           </a>
         </li>
-        <li class="nav-item <?= $menu == 'history' ? 'active': '' ?>" <?php if($_SESSION['role'] != "admin"){ echo "hidden";} ?>>
+        <!-- <li class="nav-item <?= $menu == 'history' ? 'active': '' ?>" <?php if($_SESSION['role'] != "admin"){ echo "hidden";} ?>>
           <a href="#">
             <i class="fas fa-history"></i>
             <p>History</p>
           </a>
-        </li>
+        </li> -->
       </ul>
     </div>
   </div>

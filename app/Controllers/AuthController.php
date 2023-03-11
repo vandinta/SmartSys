@@ -65,7 +65,7 @@ class AuthController extends BaseController
             "menu" => "users",
             "submenu" => " ",
             "title" => "Data Users",
-            "users" => $this->usersmodel->findAll(),
+            "users" => $this->usersmodel->orderBy('created_at', 'DESC')->findAll(),
         ];
 
         return view("cms/auth/v_users", $data);
@@ -85,7 +85,7 @@ class AuthController extends BaseController
             "menu" => "karyawan",
             "submenu" => " ",
             "title" => "Data Karyawan",
-            "karyawan" => $this->usersmodel->where('role', "petugas")->findAll(),
+            "karyawan" => $this->usersmodel->where('role', "petugas")->orderBy('created_at', 'DESC')->findAll(),
         ];
 
         return view("cms/auth/v_karyawan", $data);

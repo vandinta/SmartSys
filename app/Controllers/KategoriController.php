@@ -46,7 +46,7 @@ class KategoriController extends BaseController
             "menu" => "masterdata",
             "submenu" => "datakategori",
             "title" => "Data Kategori",
-            "kategori" => $this->kategorimodel->findAll()
+            "kategori" => $this->kategorimodel->orderBy('created_at', 'DESC')->findAll()
         ];
 
         return view("cms/kategori/v_kategori", $nilai);
