@@ -37,6 +37,9 @@ $routes->get("/", "AuthController::index");
 // proses login
 $routes->post("/login", "AuthController::login");
 $routes->get("/logout", "AuthController::logout");
+$routes->get("/viewgetemail", "AuthController::viewgetEmail");
+$routes->post("/getemail", "AuthController::getEmail");
+$routes->get("/aktivasi", "AuthController::aktivasiUser");
 
 $routes->group('/datakategori', static function ($routes) {
     $routes->get("", "KategoriController::index");

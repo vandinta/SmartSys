@@ -23,14 +23,22 @@
 						<li class="nav-item dropdown hidden-caret">
 							<a class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#" aria-expanded="false">
 								<div class="avatar-sm">
-									<img src="<?php echo base_url("assets/image/profile/" . $_SESSION['profile_picture']); ?>" alt="..." class="avatar-img rounded-circle">
+									<img src="<?php if ($_SESSION['profile_picture'] == null) {
+															echo base_url("assets/image/profile/default.png");
+														} else {
+															echo base_url("assets/image/profile/" . $_SESSION['profile_picture']);
+														} ?>" alt="..." class="avatar-img rounded-circle">
 								</div>
 							</a>
 							<ul class="dropdown-menu dropdown-user animated fadeIn">
 								<div class="dropdown-user-scroll scrollbar-outer">
 									<li>
 										<div class="user-box">
-											<div class="avatar-lg"><img src="<?php echo base_url("assets/image/profile/" . $_SESSION['profile_picture']); ?>" alt="image profile" class="avatar-img rounded"></div>
+											<div class="avatar-lg"><img src="<?php if ($_SESSION['profile_picture'] == null) {
+																													echo base_url("assets/image/profile/default.png");
+																												} else {
+																													echo base_url("assets/image/profile/" . $_SESSION['profile_picture']);
+																												} ?>" alt="image profile" class="avatar-img rounded"></div>
 											<div class="u-text">
 												<h4><?= $_SESSION['username']; ?></h4>
 												<p class="text-muted"><?= $_SESSION['email']; ?></p>

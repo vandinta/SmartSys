@@ -15,6 +15,7 @@ class UsersSeeder extends Seeder
                 'username' => 'youberr01',
                 'profile_picture' => "default.png",
                 'role' => 'superadmin',
+                'activation_status' => 1,
             ],
             [
                 'email' => 'youberrr02@gmail.com',
@@ -22,6 +23,7 @@ class UsersSeeder extends Seeder
                 'username' => 'youberrr02',
                 'profile_picture' => "default.png",
                 'role' => 'admin',
+                'activation_status' => 1,
             ],
             [
                 'email' => 'huhfmalas@gmail.com',
@@ -29,6 +31,7 @@ class UsersSeeder extends Seeder
                 'username' => 'huhfmalas',
                 'profile_picture' => "default.png",
                 'role' => 'petugas',
+                'activation_status' => 1,
             ],
         ];
         $this->db->table('users')->insertBatch($data);
