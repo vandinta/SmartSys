@@ -37,6 +37,9 @@ $routes->get("/", "AuthController::index");
 // proses login
 $routes->post("/login", "AuthController::login");
 $routes->get("/logout", "AuthController::logout");
+$routes->get("/viewgetemail", "AuthController::viewgetEmail");
+$routes->post("/getemail", "AuthController::getEmail");
+$routes->get("/aktivasi", "AuthController::aktivasiUser");
 
 $routes->group('/datakategori', static function ($routes) {
     $routes->get("", "KategoriController::index");
@@ -77,12 +80,16 @@ $routes->group('/datapenjualan', static function ($routes) {
     $routes->get("", "PenjualanController::index");
     $routes->get("tambah", "PenjualanController::create");
     $routes->get("ubah/(:num)", "PenjualanController::edit/$1");
+    $routes->get("exportexcel", "PenjualanController::exportExcel");
+    $routes->get("exportcsv", "PenjualanController::exportCsv");
+    $routes->get("exportpdf", "PenjualanController::exportPdf");
     $routes->post("input", "PenjualanController::save");
     $routes->post("input_cart", "PenjualanController::input_cart");
     $routes->post("input_order", "PenjualanController::input_order");
     // $routes->post("edit/(:num)", "PenjualanController::update/$1");
     $routes->post("ubah_penjualan/(:num)", "PenjualanController::update_penjualan/$1");
     $routes->post("ubah_order", "PenjualanController::update_order");
+    $routes->post("import", "PenjualanController::import");
     $routes->delete("(:num)", "PenjualanController::delete/$1");
     $routes->delete("delete_cart/(:num)", "PenjualanController::delete_cart/$1");
     $routes->delete("delete_order/(:num)", "PenjualanController::delete_order/$1");

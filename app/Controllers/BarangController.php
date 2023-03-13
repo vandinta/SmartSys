@@ -49,7 +49,7 @@ class BarangController extends BaseController
             "menu" => "masterdata",
             "submenu" => "databarang",
             "title" => "Data Barang",
-            "barang" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->findAll(),
+            "barang" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->orderBy('created_at', 'DESC')->findAll(),
             // "barangrelasi" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori')->findAll()
         ];
 

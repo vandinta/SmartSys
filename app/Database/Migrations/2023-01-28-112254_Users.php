@@ -38,6 +38,11 @@ class Users extends Migration
 				'default' 		=> 'petugas',
 				'null' 			=> false,
 			],
+			'activation_status'      => [
+				'type'           => 'BOOL',
+				'default' 		=> 0,
+				'null' 			=> false,
+			],
 			'last_login'       => [
 				'type'           => 'DATETIME',
 				'null'           => true,
