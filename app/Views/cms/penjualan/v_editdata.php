@@ -35,11 +35,14 @@
             <?= csrf_field() ?>
             <div class="form-group">
               <label for="nama_penjualan">Nama Penjualan</label>
-              <input type="text" class="form-control" id="nama_penjualan" name="nama_penjualan" value="<?= old("nama_penjualan")
-                                                                                                          ? old("nama_penjualan")
-                                                                                                          : $penjualan["nama_penjualan"] ?>" placeholder="Nama Penjualan" <?php if ($expired != 1) {
+              <input type="text" class="form-control <?= validation_show_error("nama_penjualan") ? 'is-invalid' : ""; ?>" id="nama_penjualan" name="nama_penjualan" value="<?= old("nama_penjualan")
+                                                                                                                                                                              ? old("nama_penjualan")
+                                                                                                                                                                              : $penjualan["nama_penjualan"] ?>" placeholder="Nama Penjualan" <?php if ($expired != 1) {
                                                                                                                                                                             echo 'disabled';
                                                                                                                                                                           } ?>>
+              <div class="invalid-feedback">
+                <?= validation_show_error("nama_penjualan") ?>
+              </div>
             </div>
             <div class="form-group">
               <label for="user">Di Inputkan Oleh</label>

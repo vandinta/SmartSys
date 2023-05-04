@@ -19,7 +19,7 @@ class KategoriController extends BaseController
 
     public function __construct()
     {
-        helper('cookie');
+        helper(['cookie', 'form']);
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -65,8 +65,7 @@ class KategoriController extends BaseController
         $data = [
             "menu" => "masterdata",
             "submenu" => "datakategori",
-            "title" => "Tambah Data Kategori",
-            "validation" => \Config\Services::validation()
+            "title" => "Tambah Data Kategori"
         ];
 
         return view("cms/kategori/v_tambahdata", $data);
@@ -78,43 +77,20 @@ class KategoriController extends BaseController
             return redirect()->to("/");
         }
 
-        // $key = getenv('TOKEN_SECRET');
-        // $token = get_cookie("access_token");
-        // $decoded = JWT::decode($token, $key, ['HS256']);
-
         if ($this->decoded->role == "superadmin") {
             return redirect()->to("/");
         }
 
-        // $rules = [
-        //     "nama_kategori" => [
-        //         "rules" => "required|max_length[2]",
-        //         "errors" => [
-        //             "required" => "{field} harus diisi.",
-        //             "max_length" => "{field} maksimal 2 karakter.",
-        //         ],
-        //     ]
-        // ];
-
-        // if(!$validation){
-        //     $kesalahan = \Config\Services::validation();
-        //     dd($kesalahan);
-        // }
-
         $rules = [
-            'nama_kategori' => 'required|max_length[2]'
+            'nama_kategori' => 'required|min_length[2]'
         ];
 
         $messages = [
             "nama_kategori" => [
-                "required" => "{field} tidak boleh kosong",
-                "max_length" => "{field} maksimal 2 karakter",
+                "required" => "Nama Kategori Tidak Boleh Kosong",
+                "min_length" => "Nama Kategori Minimal 2 Karakter",
             ]
         ];
-
-        // $data = [
-        //     "nama_kategori" => $this->request->getVar("nama_kategori"),
-        // ];
 
         if ($this->validate($rules, $messages)) {
             $data = [
@@ -126,11 +102,9 @@ class KategoriController extends BaseController
             return redirect()->to("/datakategori");
         }
         $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-        $kesalahan = $this->validator;
         return redirect()
             ->to("/datakategori/tambah")
-            ->withInput()
-            ->with("validation", $kesalahan);
+            ->withInput();
     }
 
     public function edit($id)
@@ -148,7 +122,6 @@ class KategoriController extends BaseController
             "submenu" => "datakategori",
             "title" => "Ubah Data Kategori",
             "kategori" => $this->kategorimodel->where('id_kategori', $id)->first(),
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/kategori/v_editdata", $data);
@@ -166,18 +139,13 @@ class KategoriController extends BaseController
 
         $validation = $this->validate([
             "nama_kategori" => [
-                "rules" => "required|max_length[2]",
+                "rules" => "required|min_length[2]",
                 "errors" => [
-                    "required" => "{field} harus diisi.",
-                    "max_length" => "{field} maksimal 2 karakter.",
+                    "required" => "Nama Kategori Tidak Boleh Kosong",
+                    "min_length" => "Nama Kategori Minimal 2 Karakter",
                 ],
             ]
         ]);
-
-        // $data = [
-        //     "id_kategori" => $id,
-        //     "nama_kategori" => $this->request->getVar("nama_kategori")
-        // ];
 
         if ($validation) {
             $data = [
@@ -189,12 +157,10 @@ class KategoriController extends BaseController
             session()->setFlashdata("berhasil_diubah", "Data Kategori Berhasil Ditubah");
             return redirect()->to("/datakategori/ubah/" . "/" . $id);
         } else {
-            $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
                 ->to("/datakategori/ubah/" . "/" . $id)
-                ->withInput()
-                ->with("validation", $kesalahan);
+                ->withInput();
         }
     }
 

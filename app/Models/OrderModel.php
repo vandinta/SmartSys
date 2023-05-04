@@ -14,11 +14,21 @@ class OrderModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_penjualan', 'id_barang', 'harga_beli_barang', 'harga_jual_barang', 'jumlah_barang', 'created_at', 'updated_at'];
+    protected $allowedFields    = ['id_penjualan', 'id_barang', 'harga_beli_barang', 'harga_jual_barang', 'jumlah_barang', 'bulan', 'created_at', 'updated_at'];
 
     // Dates
     protected $useTimestamps = false;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
+
+    // function get_order($id_barang, $tanggal)
+    // {
+    //     $builder = $this->db->table('tb_order');
+    //     $builder->where(['id_barang' => $id_barang]);
+    //     $builder->group_by($tanggal);
+    //     $builder->SUM('jumlah_barang');
+    //     $query = $builder->get();
+    //     return $query->getResultArray();
+    // }
 }

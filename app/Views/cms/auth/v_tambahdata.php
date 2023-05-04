@@ -33,28 +33,27 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 col-lg-12">
-              <?= $validation->listErrors(); ?>
               <form action="<?php echo base_url('/datausers/input') ?>" method="post" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 <div class="form-group">
                   <label for="email">Email</label>
-                  <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="<?= old("email") ?>" autofocus>
+                  <input type="email" class="form-control <?= validation_show_error("email") ? 'is-invalid' : ""; ?>" id="email" name="email" placeholder="Email" value="<?= old("email") ?>" autofocus>
                   <div class="invalid-feedback">
-                    <?= $validation->getError("email") ?>
+                    <?= validation_show_error("email") ?>
                   </div>
                 </div>
                 <div class="form-group">
                   <label for="password">Password</label>
-                  <input type="password" class="form-control" id="password" name="password" placeholder="Password" value="<?= old("password") ?>">
+                  <input type="password" class="form-control <?= validation_show_error("password") ? 'is-invalid' : ""; ?>" id="password" name="password" placeholder="Password" value="<?= old("password") ?>">
                   <div class="invalid-feedback">
-                    <?= $validation->getError("password") ?>
+                    <?= validation_show_error("password") ?>
                   </div>
                 </div>
                 <div class="form-group">
                   <label for="confpassword">Konfirmasi Password</label>
-                  <input type="password" class="form-control" id="confpassword" name="confpassword" placeholder="Konfirmasi Password" value="<?= old("confpassword") ?>">
+                  <input type="password" class="form-control <?= validation_show_error("confpassword") ? 'is-invalid' : ""; ?>" id="confpassword" name="confpassword" placeholder="Konfirmasi Password" value="<?= old("confpassword") ?>">
                   <div class="invalid-feedback">
-                    <?= $validation->getError("confpassword") ?>
+                    <?= validation_show_error("confpassword") ?>
                   </div>
                 </div>
                 <div class="form-group">
@@ -63,7 +62,10 @@
                     <span class="input-icon-addon">
                       <i class="fa fa-user"></i>
                     </span>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+                    <input type="text" class="form-control <?= validation_show_error("username") ? 'is-invalid' : ""; ?>" id="username" name="username" placeholder="Username">
+                    <div class="invalid-feedback">
+                      <?= validation_show_error("username") ?>
+                    </div>
                   </div>
                 </div>
                 <div class="form-group">
@@ -73,12 +75,15 @@
                     <option value="admin">Admin</option>
                     <option value="petugas">Petugas</option>
                   </select>
+                  <div class="invalid-feedback">
+                    <?= validation_show_error("role") ?>
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label for="image_barang">Gambar Barang</label>
-                  <input type="file" class="form-control-file" id="image_barang" name="image_barang">
+                  <label for="profile_picture">Foto Profile</label>
+                  <input type="file" class="form-control-file <?= validation_show_error("profile_picture") ? 'is-invalid' : ""; ?>" id="profile_picture" name="profile_picture">
                   <div class="invalid-feedback">
-                    <?= $validation->getError("image_barang") ?>
+                    <?= validation_show_error("profile_picture") ?>
                   </div>
                 </div>
                 <br>

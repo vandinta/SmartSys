@@ -33,20 +33,15 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 col-lg-12">
-              <?= $validation->listErrors(); ?>
               <form action="<?php echo base_url('/datakategori/edit/') . "/" . $kategori["id_kategori"] ?>" method="post">
                 <?= csrf_field() ?>
                 <div class="form-group">
                   <label for="nama_kategori">Nama Kategori</label>
-                  <input type="text" class="form-control <?= $validation->hasError(
-                                                            "nama_kategori"
-                                                          )
-                                                            ? "is-invalid"
-                                                            : "" ?>" id="nama_kategori" name="nama_kategori" placeholder="Nama Kategori" value="<?= old("nama_kategori")
+                  <input type="text" class="form-control <?= validation_show_error("nama_kategori") ? 'is-invalid' : ""; ?>" id="nama_kategori" name="nama_kategori" placeholder="Nama Kategori" value="<?= old("nama_kategori")
                                                                                                                                                   ? old("nama_kategori")
                                                                                                                                                   : $kategori["nama_kategori"] ?>" autofocus>
                   <div class="invalid-feedback">
-                    <?= $validation->getError("nama_kategori") ?>
+                    <?= validation_show_error("nama_kategori") ?>
                   </div>
                 </div>
                 <div class="card-action">
