@@ -33,14 +33,13 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 col-lg-12">
-              <?= $validation->listErrors(); ?>
               <form action="<?php echo base_url('/databarang/input') ?>" method="post" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 <div class="form-group">
                   <label for="nama_barang">Nama Barang</label>
-                  <input type="text" class="form-control" id="nama_barang" name="nama_barang" placeholder="Nama Barang" value="<?= old("nama_barang") ?>" autofocus>
+                  <input type="text" class="form-control <?= validation_show_error("nama_barang") ? 'is-invalid' : ""; ?>" id="nama_barang" name="nama_barang" placeholder="Nama Barang" value="<?= old("nama_barang") ?>" autofocus>
                   <div class="invalid-feedback">
-                    <?= $validation->getError("nama_barang") ?>
+                    <?= validation_show_error("nama_barang") ?>
                   </div>
                 </div>
                 <div class="form-group">
@@ -53,9 +52,9 @@
                 </div>
                 <div class="form-group">
                   <label for="stok_barang">Stok</label>
-                  <input type="number" class="form-control" id="stok_barang" name="stok_barang" placeholder="Stok" value="<?= old("stok_barang") ?>">
+                  <input type="number" class="form-control <?= validation_show_error("stok_barang") ? 'is-invalid' : ""; ?>" id="stok_barang" name="stok_barang" placeholder="Stok" value="<?= old("stok_barang") ?>">
                   <div class="invalid-feedback">
-                    <?= $validation->getError("stok_barang") ?>
+                    <?= validation_show_error("stok_barang") ?>
                   </div>
                 </div>
                 <div class="form-group">
@@ -64,12 +63,12 @@
                     <div class="input-group-prepend">
                       <span class="input-group-text">Rp.</span>
                     </div>
-                    <input type="text" class="form-control" id="harga_beli" name="harga_beli" value="<?= old("harga_beli") ?>">
+                    <input type="text" class="form-control <?= validation_show_error("harga_beli") ? 'is-invalid' : ""; ?>" id="harga_beli" name="harga_beli" value="<?= old("harga_beli") ?>">
                     <div class="input-group-append">
                       <span class="input-group-text">.00</span>
                     </div>
                     <div class="invalid-feedback">
-                      <?= $validation->getError("harga_beli") ?>
+                      <?= validation_show_error("harga_beli") ?>
                     </div>
                   </div>
                 </div>
@@ -79,20 +78,20 @@
                     <div class="input-group-prepend">
                       <span class="input-group-text">Rp.</span>
                     </div>
-                    <input type="text" class="form-control" id="harga_jual" name="harga_jual" value="<?= old("harga_jual") ?>">
+                    <input type="text" class="form-control <?= validation_show_error("harga_jual") ? 'is-invalid' : ""; ?>" id="harga_jual" name="harga_jual" value="<?= old("harga_jual") ?>">
                     <div class="input-group-append">
                       <span class="input-group-text">.00</span>
                     </div>
                     <div class="invalid-feedback">
-                      <?= $validation->getError("harga_jual") ?>
+                      <?= validation_show_error("harga_jual") ?>
                     </div>
                   </div>
                 </div>
                 <div class="form-group">
                   <label for="image_barang">Gambar Barang</label>
-                  <input type="file" class="form-control-file" id="image_barang" name="image_barang">
+                  <input type="file" class="form-control-file <?= validation_show_error("image_barang") ? 'is-invalid' : ""; ?>" id="image_barang" name="image_barang">
                   <div class="invalid-feedback">
-                    <?= $validation->getError("image_barang") ?>
+                    <?= validation_show_error("image_barang") ?>
                   </div>
                 </div>
                 <br>

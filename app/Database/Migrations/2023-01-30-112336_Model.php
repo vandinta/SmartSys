@@ -15,13 +15,7 @@ class Model extends Migration
 				'unsigned'       => true,
 				'auto_increment' => true
 			],
-            'user_id'          => [
-				'type'           => 'INT',
-				'constraint'     => 5,
-				'unsigned'       => true,
-				'null'			=> false,
-			],
-            'id_penjualan'          => [
+      'id_barang'          => [
 				'type'           => 'INT',
 				'constraint'     => 5,
 				'unsigned'       => true,
@@ -32,13 +26,17 @@ class Model extends Migration
 				'constraint'     => 255,
 				'null'           => false,
 			],
+			'nilai_akurasi'       => [
+				'type'           => 'VARCHAR',
+				'constraint'     => 255,
+				'null'           => false,
+			],
 			'created_at datetime default current_timestamp',
 			'updated_at datetime default current_timestamp on update current_timestamp',
 		]);
 
 		$this->forge->addKey('id_model', TRUE);
-        $this->forge->addForeignKey('user_id', 'users', 'user_id', 'NO ACTION', 'NO ACTION');
-        $this->forge->addForeignKey('id_penjualan', 'tb_penjualan', 'id_penjualan', 'NO ACTION', 'NO ACTION');
+    $this->forge->addForeignKey('id_barang', 'tb_barang', 'id_barang', 'CASCADE', 'CASCADE');
 		$this->forge->createTable('tb_model', TRUE);
 	}
 

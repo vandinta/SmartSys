@@ -39,15 +39,11 @@
       <div class="card">
         <div class="col-md-6 col-lg-12">
           <div class="card-body">
-            <?= $validation->listErrors(); ?>
             <form action="<?php echo base_url('/setting/edit/') . "/" . $akun["user_id"] ?>" method="post" enctype="multipart/form-data">
               <?= csrf_field() ?>
               <div class="form-group">
                 <label for="email">Email</label>
                 <input type="text" class="form-control" id="email" name="email" value="<?= $akun["email"] ?>" disabled>
-                <div class="invalid-feedback">
-                  <?= $validation->getError("email") ?>
-                </div>
               </div>
               <div class="form-group">
                 <label for="username">Username</label>
@@ -55,32 +51,25 @@
                   <span class="input-icon-addon">
                     <i class="fa fa-user"></i>
                   </span>
-                  <input type="text" class="form-control <?= $validation->hasError(
-                                                            "username"
-                                                          )
-                                                            ? "is-invalid"
-                                                            : "" ?>" id="username" name="username" placeholder="Username" value="<?= old("username")
-                                                                                                                                  ? old("username")
-                                                                                                                                  : $akun["username"] ?>">
-                </div>
-                <div class="invalid-feedback">
-                  <?= $validation->getError("username") ?>
+                  <input type="text" class="form-control <?= validation_show_error("username") ? 'is-invalid' : ""; ?>" id="username" name="username" placeholder="Username" value="<?= old("username")
+                                                                                                                                                                                      ? old("username")
+                                                                                                                                                                                      : $akun["username"] ?>">
+                  <div class="invalid-feedback">
+                    <?= validation_show_error("username") ?>
+                  </div>
                 </div>
               </div>
               <div class="form-group">
                 <label for="role">Role</label>
                 <input type="text" class="form-control" id="role" name="role" value="<?= $akun["role"] ?>" disabled>
-                <div class="invalid-feedback">
-                  <?= $validation->getError("role") ?>
-                </div>
               </div>
               <div class="form-group">
                 <label for="profile_picture">Gambar Profile</label>
-                <input type="file" class="form-control-file" id="profile_picture" name="profile_picture" value="<?= old("profile_picture")
-                                                                                                                  ? old("profile_picture")
-                                                                                                                  : $akun["profile_picture"] ?>">
+                <input type="file" class="form-control-file <?= validation_show_error("profile_picture") ? 'is-invalid' : ""; ?>" id="profile_picture" name="profile_picture" value="<?= old("profile_picture")
+                                                                                                                                                                                        ? old("profile_picture")
+                                                                                                                                                                                        : $akun["profile_picture"] ?>">
                 <div class="invalid-feedback">
-                  <?= $validation->getError("profile_picture") ?>
+                  <?= validation_show_error("profile_picture") ?>
                 </div>
               </div>
               <br>

@@ -59,7 +59,7 @@
         <li class="nav-item <?= $menu == 'datamodel' ? 'active' : '' ?>" <?php if ($_SESSION['role'] != "admin") {
                                                                           echo "hidden";
                                                                         } ?>>
-          <a href="#">
+          <a href="<?= base_url("/datamodel") ?>">
             <i class="fas fa-suitcase"></i>
             <p>Data Model</p>
           </a>

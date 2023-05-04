@@ -95,12 +95,20 @@ $routes->group('/datapenjualan', static function ($routes) {
     $routes->delete("delete_order/(:num)", "PenjualanController::delete_order/$1");
 });
 
-$routes->get("/datamodel", "AuthController::index");
+$routes->group('/datamodel', static function ($routes) {
+    $routes->get("", "MLController::index");
+    $routes->get("tambah", "MLController::create");
+    $routes->get("create", "MLController::model");
+    $routes->match(['get', 'post'], "create", "MLController::model");
+});
+
 $routes->get("/prakiraan", "AuthController::index");
 $routes->get("/history", "AuthController::index");
 
+$routes->get("/ubahpassword/(:segment)", "AuthController::ubah/$1");
 $routes->get("/setting/(:segment)", "AuthController::edit/$1");
 $routes->get("/karyawan", "AuthController::listKaryawan");
+$routes->post("/ubahpassword/(:num)", "AuthController::ganti/$1");
 $routes->post("/setting/edit/(:num)", "AuthController::update/$1");
 // $routes->get("/pages/index", "Pages::index");
 // $routes->get("/pages/about", "Pages::about");

@@ -80,7 +80,7 @@
                   <input type="checkbox" class="form-check-input" id="remember" name="remember" value="remember">
                   <label class="form-check-label" for="exampleCheck1">Remember Me</label>
                 </div>
-                <a href="">Forgot Password</a>
+                <!-- <a href="">Forgot Password</a> -->
               </div>
               <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign In</button>
             </form>

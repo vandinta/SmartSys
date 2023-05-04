@@ -23,7 +23,7 @@ class PenjualanController extends BaseController
 
     public function __construct()
     {
-        helper(['cookie', 'date', 'tgl_indo', 'rupiah']);
+        helper(['cookie', 'date', 'tgl_indo', 'rupiah', 'form']);
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -53,7 +53,6 @@ class PenjualanController extends BaseController
             "submenu" => "",
             "title" => "Data Penjualan",
             "penjualan" => $this->penjualanmodel->orderBy('created_at', 'DESC')->findAll(),
-            "validation" => \Config\Services::validation(),
         ];
 
         return view("cms/penjualan/v_penjualan", $data);
@@ -92,7 +91,6 @@ class PenjualanController extends BaseController
             "barang" => $this->barangmodel->findAll(),
             "cart" => $this->cartmodel->join('tb_barang', 'tb_barang.id_barang=cart.id_barang', 'left')->findAll(),
             "harga" => $harga,
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/penjualan/v_tambahdata", $data);
@@ -108,20 +106,37 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
-        $id = $this->request->getVar("id_barang");
-
-        $get = $this->barangmodel->where('id_barang', $id)->first();
-
-        $data = [
-            "id_barang" => $this->request->getVar("id_barang"),
-            "harga_beli_barang" => $get['harga_beli'],
-            "harga_jual_barang" => $get['harga_jual'],
-            "qty" => $this->request->getVar("qty"),
-            "jumlah_harga" => $this->request->getVar("jumlah_harga_hide"),
+        $rules = [
+            'id_barang' => 'required',
+            'qty' => 'required|numeric'
         ];
 
-        $this->cartmodel->save($data);
-        return redirect()->to("/datapenjualan/tambah");
+        $messages = [
+            "id_barang" => [
+                "required" => "Nama Barang Tidak Boleh Kosong",
+            ],
+            "qty" => [
+                "required" => "QTY Tidak Boleh Kosong",
+                "numeric" => "QTY Harus Berisi Angka",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $id = $this->request->getVar("id_barang");
+            $get = $this->barangmodel->where('id_barang', $id)->first();
+
+            $data = [
+                "id_barang" => $this->request->getVar("id_barang"),
+                "harga_beli_barang" => $get['harga_beli'],
+                "harga_jual_barang" => $get['harga_jual'],
+                "qty" => $this->request->getVar("qty"),
+                "jumlah_harga" => $this->request->getVar("jumlah_harga_hide"),
+            ];
+
+            $this->cartmodel->save($data);
+            return redirect()->to("/datapenjualan/tambah");
+        }
+        return redirect()->to("/datapenjualan/tambah")->withInput();
     }
 
     public function delete_cart($id = null)
@@ -181,6 +196,9 @@ class PenjualanController extends BaseController
         $this->penjualanmodel->save($data_penjualan);
         $id_penjualan = $this->penjualanmodel->insertID;
 
+        $bulan_sekarang = date("Y-m", $t);
+        $bulan = $bulan_sekarang . '-01';
+
         for ($i = 0; $i < count($cart); $i++) {
             $data_order = [
                 "id_penjualan" => $id_penjualan,
@@ -188,6 +206,7 @@ class PenjualanController extends BaseController
                 "harga_beli_barang" => $cart[$i]['harga_beli_barang'],
                 "harga_jual_barang" => $cart[$i]['harga_jual_barang'],
                 "jumlah_barang" => $cart[$i]['qty'],
+                "bulan" => $bulan,
             ];
 
             $this->ordermodel->save($data_order);
@@ -237,7 +256,6 @@ class PenjualanController extends BaseController
             "barang" => $this->barangmodel->findAll(),
             "penjualan" => $this->penjualanmodel->where('id_penjualan', $id)->join('users', 'users.user_id=tb_penjualan.user_id', 'left')->first(),
             "order" => $this->ordermodel->where('id_penjualan', $id)->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->findAll(),
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/penjualan/v_editdata", $data);
@@ -266,37 +284,56 @@ class PenjualanController extends BaseController
             return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
         }
 
-        $id_barang = $this->request->getVar("id_barang");
-
-        $get = $this->barangmodel->where('id_barang', $id_barang)->first();
-
-        $data = [
-            "id_penjualan" => $id_penjualan,
-            "id_barang" => $id_barang,
-            "harga_beli_barang" => $get['harga_beli'],
-            "harga_jual_barang" => $get['harga_jual'],
-            "jumlah_barang" => $this->request->getVar("qty"),
-            "jumlah_harga" => $this->request->getVar("jumlah_harga_barang"),
+        $rules = [
+            'id_barang' => 'required',
+            'qty' => 'required|numeric'
         ];
 
-        $this->ordermodel->save($data);
-
-        $cek_barang = $this->barangmodel->where('id_barang', $id_barang)->first();
-        $cek_barang['stok_barang'] -= $data['jumlah_barang'];
-        $data_barang = [
-            'stok_barang' => $cek_barang['stok_barang'],
+        $messages = [
+            "id_barang" => [
+                "required" => "Nama Barang Tidak Boleh Kosong",
+            ],
+            "qty" => [
+                "required" => "QTY Tidak Boleh Kosong",
+                "numeric" => "QTY Harus Berisi Angka",
+            ]
         ];
-        $this->barangmodel->update($id_barang, $data_barang);
 
-        $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
-        $cek_penjualan['total_harga'] += $data['jumlah_harga'];
-        $data_penjualan = [
-            'total_harga' => $cek_penjualan['total_harga'],
-        ];
-        $this->penjualanmodel->update($id_penjualan, $data_penjualan);
+        if ($this->validate($rules, $messages)) {
 
-        session()->setFlashdata("berhasil_tambah_order", "Data Barang Berhasil Ditambahkan");
-        return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
+            $id_barang = $this->request->getVar("id_barang");
+
+            $get = $this->barangmodel->where('id_barang', $id_barang)->first();
+
+            $data = [
+                "id_penjualan" => $id_penjualan,
+                "id_barang" => $id_barang,
+                "harga_beli_barang" => $get['harga_beli'],
+                "harga_jual_barang" => $get['harga_jual'],
+                "jumlah_barang" => $this->request->getVar("qty"),
+                "jumlah_harga" => $this->request->getVar("jumlah_harga_barang"),
+            ];
+
+            $this->ordermodel->save($data);
+
+            $cek_barang = $this->barangmodel->where('id_barang', $id_barang)->first();
+            $cek_barang['stok_barang'] -= $data['jumlah_barang'];
+            $data_barang = [
+                'stok_barang' => $cek_barang['stok_barang'],
+            ];
+            $this->barangmodel->update($id_barang, $data_barang);
+
+            $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
+            $cek_penjualan['total_harga'] += $data['jumlah_harga'];
+            $data_penjualan = [
+                'total_harga' => $cek_penjualan['total_harga'],
+            ];
+            $this->penjualanmodel->update($id_penjualan, $data_penjualan);
+
+            session()->setFlashdata("berhasil_tambah_order", "Data Barang Berhasil Ditambahkan");
+            return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
+        }
+        return redirect()->to("/datapenjualan/ubah/" . $id_penjualan)->withInput();
     }
 
     public function update_penjualan($id)
@@ -326,8 +363,8 @@ class PenjualanController extends BaseController
 
         $messages = [
             "nama_penjualan" => [
-                "required" => "{field} tidak boleh kosong",
-                "max_length" => "{field} maksimal 255 karakter",
+                "required" => "Nama Penjualan tidak boleh kosong",
+                "max_length" => "Nama Penjualan maksimal 255 karakter",
             ],
         ];
 
@@ -341,11 +378,10 @@ class PenjualanController extends BaseController
             session()->setFlashdata("berhasil_diubah", "Data Penjualan Berhasil Ditubah");
             return redirect()->to("/datapenjualan/ubah/" . "/" . $id);
         } else {
-            $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
-                ->to("/databarang/ubah/" . "/" . $id)
-                ->with("validation", $kesalahan);
+                ->to("/datapenjualan/ubah/" . "/" . $id)
+                ->withInput();
         }
     }
 
@@ -383,7 +419,7 @@ class PenjualanController extends BaseController
 
         $messages = [
             "qty" => [
-                "required" => "{field} tidak boleh kosong",
+                "required" => "QTY Tidak Boleh Kosong",
             ],
         ];
 
@@ -440,8 +476,8 @@ class PenjualanController extends BaseController
             $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
-                ->to("/databarang/ubah/" . "/" . $id_penjualan)
-                ->with("validation", $kesalahan);
+                ->to("/datapenjualan/ubah/" . "/" . $id_penjualan)
+                ->withInput();
         }
     }
 

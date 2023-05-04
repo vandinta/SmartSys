@@ -21,7 +21,7 @@ class BarangController extends BaseController
 
     public function __construct()
     {
-        helper(['cookie', 'rupiah']);
+        helper(['cookie', 'rupiah', 'form']);
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -49,7 +49,7 @@ class BarangController extends BaseController
             "menu" => "masterdata",
             "submenu" => "databarang",
             "title" => "Data Barang",
-            "barang" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->orderBy('created_at', 'DESC')->findAll(),
+            "barang" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->orderBy('tb_barang.created_at', 'DESC')->findAll(),
             // "barangrelasi" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori')->findAll()
         ];
 
@@ -87,7 +87,6 @@ class BarangController extends BaseController
             "submenu" => "databarang",
             "title" => "Tambah Data Barang",
             "kategori" => $this->kategorimodel->findAll(),
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/barang/v_tambahdata", $data);
@@ -105,11 +104,12 @@ class BarangController extends BaseController
 
         $rules = [
             'id_kategori' => 'required',
-            'nama_barang' => 'required|max_length[255]',
+            'nama_barang' => 'required|max_length[255]|is_unique[tb_barang.nama_barang]',
             'stok_barang' => 'required|numeric',
             'harga_beli' => 'required|numeric',
             'harga_jual' => 'required|numeric',
         ];
+
         $rules_image = [
             "image_barang" => "uploaded[image_barang]|is_image[image_barang]|mime_in[image_barang,image/jpg,image/jpeg,image/png]|max_size[image_barang,4000]",
         ];
@@ -119,33 +119,30 @@ class BarangController extends BaseController
                 "required" => "{field} tidak boleh kosong",
             ],
             "nama_barang" => [
-                "required" => "{field} tidak boleh kosong",
-                "max_length" => "{field} maksimal 255 karakter",
+                "required" => "Nama Barang Tidak Boleh Kosong",
+                "max_length" => "Nama Barang Maksimal 255 Karakter",
+                "is_unique" => "Nama Barang Sudah Terdaftar",
             ],
             "stok_barang" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
+                "required" => "Stok Barang Tidak Boleh Kosong",
+                "numeric" => "Stok Barang harus berisi angka",
             ],
             "harga_beli" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
+                "required" => "Harga Beli Tidak Boleh Kosong",
+                "numeric" => "Harga Beli Harus Berisi Angka",
             ],
             "harga_jual" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
-            ],
-            "image_barang" => [
-                'uploaded' => '{field} tidak boleh kosong',
-                'mime_in' => '{field} Harus Berupa jpg, jpeg, png atau webp',
-                'max_size' => 'Ukuran {field} Maksimal 4 MB'
-            ],
+                "required" => "Harga Jual Tidak Boleh Kosong",
+                "numeric" => "Harga Jual Harus Berisi Angka",
+            ]
         ];
+        
         $messages_image = [
             "image_barang" => [
-                'uploaded' => '{field} tidak boleh kosong',
-                'mime_in' => '{field} Harus Berupa jpg, jpeg, png atau webp',
-                'max_size' => 'Ukuran {field} Maksimal 4 MB'
-            ],
+                'uploaded' => 'Gambar Tidak Boleh Kosong',
+                'mime_in' => 'Gambar Harus Berupa jpg, jpeg, png atau webp',
+                'max_size' => 'Ukuran Gambar Maksimal 4 MB'
+            ]
         ];
 
         if ($this->validate($rules, $messages)) {
@@ -187,28 +184,22 @@ class BarangController extends BaseController
             //     $dataimagebarang->move('assets/image/barang/', $imagebarangFileName);
             // }
 
-            // $data = [
-            //     "id_kategori" => $this->request->getVar("id_kategori"),
-            //     "nama_barang" => $this->request->getVar("nama_barang"),
-            //     "stok_barang" => $this->request->getVar("stok_barang"),
-            //     "harga_beli" => $this->request->getVar("harga_beli"),
-            //     "harga_jual" => $this->request->getVar("harga_jual"),
-            //     "image_barang" => $imagebarangFileName
-            // ];
+            $data = [
+                "id_kategori" => $this->request->getVar("id_kategori"),
+                "nama_barang" => $this->request->getVar("nama_barang"),
+                "stok_barang" => $this->request->getVar("stok_barang"),
+                "harga_beli" => $this->request->getVar("harga_beli"),
+                "harga_jual" => $this->request->getVar("harga_jual"),
+            ];
 
-            // $this->barangmodel->save($data);
-            // session()->setFlashdata("berhasil_tambah", "Data Barang Berhasil Ditambahkan");
-            // return redirect()->to("/databarang");
+            $this->barangmodel->save($data);
+            session()->setFlashdata("berhasil_tambah", "Data Barang Berhasil Ditambahkan");
+            return redirect()->to("/databarang");
         } else {
-            // echo "gagal";
-            // var_dump($this->session);
-            // die;
             $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-            $kesalahan = $this->validator;
             return redirect()
                 ->to("/databarang/tambah")
-                ->withInput()
-                ->with("validation", $kesalahan);
+                ->withInput();
         }
     }
 
@@ -229,7 +220,6 @@ class BarangController extends BaseController
             "path" => "assets/image/barang/",
             "barang" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori')->where('id_barang', $id)->first(),
             "kategori" => $this->kategorimodel->findAll(),
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/barang/v_editdata", $data);
@@ -262,29 +252,29 @@ class BarangController extends BaseController
                 "required" => "{field} tidak boleh kosong",
             ],
             "nama_barang" => [
-                "required" => "{field} tidak boleh kosong",
-                "max_length" => "{field} maksimal 255 karakter",
+                "required" => "Nama Barang Tidak Boleh Kosong",
+                "max_length" => "Nama Barang Maksimal 255 Karakter",
             ],
             "stok_barang" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
+                "required" => "Stok Barang Tidak Boleh Kosong",
+                "numeric" => "Stok Barang harus berisi angka",
             ],
             "harga_beli" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
+                "required" => "Harga Beli Tidak Boleh Kosong",
+                "numeric" => "Harga Beli Harus Berisi Angka",
             ],
             "harga_jual" => [
-                "required" => "{field} tidak boleh kosong",
-                "numeric" => "{field} harus berisi angka",
+                "required" => "Harga Jual Tidak Boleh Kosong",
+                "numeric" => "Harga Jual Harus Berisi Angka",
             ]
         ];
 
         $messages_image = [
             "image_barang" => [
-                'uploaded' => '{field} tidak boleh kosong',
-                'mime_in' => '{field} Harus Berupa jpg, jpeg, png atau webp',
-                'max_size' => 'Ukuran {field} Maksimal 4 MB'
-            ],
+                'uploaded' => 'Gambar Tidak Boleh Kosong',
+                'mime_in' => 'Gambar Harus Berupa jpg, jpeg, png atau webp',
+                'max_size' => 'Ukuran Gambar Maksimal 4 MB'
+            ]
         ];
 
         $cek = $this->barangmodel->where('id_barang', $id)->first();
@@ -331,11 +321,9 @@ class BarangController extends BaseController
             session()->setFlashdata("berhasil_diubah", "Data Barang Berhasil Ditubah");
             return redirect()->to("/databarang/ubah/" . "/" . $id);
         } else {
-            $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
-                ->to("/databarang/ubah/" . "/" . $id)
-                ->with("validation", $kesalahan);
+                ->to("/databarang/ubah/" . "/" . $id)->withInput();
         }
     }
 
