@@ -137,8 +137,8 @@ class MLController extends BaseController
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                     'color' => ['argb' => 'FF000000'],
-                    ]
-                    ]
+                ]
+            ]
         ];
         $sheet->getStyle('A1:B' . ($kolom - 1))->applyFromArray($styleArray);
         
@@ -146,10 +146,12 @@ class MLController extends BaseController
         $sheet->getColumnDimension('B')->setAutoSize(true);
         
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
+        $filename = 'data_' . $filename . '.csv';
         header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename=data_' . $filename . '.csv');
+        header('Content-Disposition: attachment;filename=' . $filename);
         header('Cache-Control: max-age=0');
-        $writer->save('php://output');
-        exit();
+        // $writer->save('php://output');
+        $writer->save("machine/" . $filename);
+        // exit();
     }
 }
