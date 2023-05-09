@@ -34,7 +34,7 @@
             </div>
             <a href="<?php echo base_url('/datamodel/tambah') ?>" type="button" class="btn btn-primary btn-round ml-2" <?php if ($_SESSION['role'] == "superadmin") {
                                                                                                                           echo "hidden";
-                                                                                                                        } ?>><i class="fa fa-plus"></i>Buat Model</a>
+                                                                                                                        } ?>><i class="fa fa-plus"></i> Buat Model</a>
           </div>
         </div>
         <div class="card-body">
