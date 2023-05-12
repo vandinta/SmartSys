@@ -239,40 +239,6 @@
     var action = '<td> <div class="form-button-action"> <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-primary btn-lg" data-original-title="Edit Task"> <i class="fa fa-edit"></i> </button> <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" data-original-title="Remove"> <i class="fa fa-times"></i> </button> </div> </td>';
   });
 
-  function hapus(id) {
-    Swal.fire({
-      title: 'Peringatan!!!',
-      text: "apakah anda yakin ingin menghapus Data Barang ini?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Hapus',
-      cancelButtonText: 'Batal',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        $.ajax({
-          url: '<?= base_url('/datamodel') . "/" ?>' + id,
-          method: 'delete',
-          success: function(response) {
-            Swal.fire({
-              icon: 'success',
-              title: 'Berhasil Menghapus Data!',
-              text: response.message,
-              confirmButtonColor: '#3085d6',
-              confirmButtonText: 'Oke',
-            }).then((result) => {
-              if (result.isConfirmed) {
-                window.location.reload(true);
-              }
-            })
-            fetchAllPosts();
-          }
-        });
-      }
-    });
-  }
-
   <?php if (session()->getFlashdata('berhasil_tambah') != NULL) { ?>
     Swal.fire({
       icon: 'success',
@@ -289,10 +255,10 @@
     });
   <?php } ?>
 
-  <?php if (session()->getFlashdata('gagal_import') != NULL) { ?>
+  <?php if (session()->getFlashdata('gagal_tambah') != NULL) { ?>
     Swal.fire({
       icon: 'error',
-      title: 'Data Anda Tidak Sesuai!',
+      title: 'Data Anda Tidak Ditemukan!',
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>
