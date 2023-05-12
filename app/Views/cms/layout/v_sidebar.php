@@ -30,7 +30,7 @@
         <li class="nav-item <?= $menu == 'masterdata' ? 'active' : '' ?>">
           <a data-toggle="collapse" href="#base">
             <i class="fas fa-folder"></i>
-            <p>Master Data</p>
+            <p>Data Master</p>
             <span class="caret"></span>
           </a>
           <div class="collapse <?= $menu == 'masterdata' ? 'show' : '' ?>" id="base">

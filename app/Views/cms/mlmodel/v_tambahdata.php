@@ -43,9 +43,19 @@
                     <?php endforeach; ?>
                   </select>
                 </div>
+                <div class="form-group">
+                  <label for="lim_akurasi">Limit Nilai Akurasi</label>
+                  <input type="number" class="form-control <?= validation_show_error("lim_akurasi") ? 'is-invalid' : ""; ?>" id="lim_akurasi" name="lim_akurasi" placeholder="Limit Nilai Akurasi" value="50">
+                  <div class="invalid-feedback">
+                    <?= validation_show_error("lim_akurasi") ?>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <h6 class="float-left">*Semakin besar batas nilai akurasi yang diinginkan maka semakin lama waktu tunggu</h6>
+                </div>
                 <br>
                 <div class="card-action">
-                  <button type="submit" class="btn btn-outline-success float-right mr-2">Simpan</button>
+                  <button type="submit" class="btn btn-outline-success float-right mr-2" onclick="simpan()">Simpan</button>
                   <a href="<?php echo base_url('/datamodel') ?>" type="button" class="btn btn-outline-danger float-right mr-2">Batal</a>
                 </div>
               </form>
@@ -60,6 +70,17 @@
 
 <?= $this->section("content_js") ?>
 <script>
+  function simpan() {
+    Swal.fire({
+      title: 'Sedang Diproses!',
+      html: 'mohon tunggu proses sampai selesai, semakin besar nilai akurasi yang diinginkan maka semakin lama waktu tunggu',
+      allowEscapeKey: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    });
+  }
   <?php if (session()->getFlashdata('gagal_tambah') != NULL) { ?>
     Swal.fire({
       icon: 'error',
