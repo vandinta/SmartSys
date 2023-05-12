@@ -49,7 +49,7 @@
 										<div class="dropdown-divider"></div>
 										<a class="dropdown-item" href="<?= base_url("/setting") . "/" . $_SESSION['email'] ?>">Pengaturan Akun</a>
 										<div class="dropdown-divider"></div>
-										<a class="dropdown-item" href="<?= base_url("/ubahpassword") . "/" . $_SESSION['email'] ?>">Ubah Password</a>
+										<a class="dropdown-item" href="<?= base_url("/ubahpassword") . "/" . $_SESSION['email'] ?>">Ubah Kata Sandi</a>
 										<div class="dropdown-divider"></div>
 										<a class="dropdown-item" href="<?php echo base_url("/logout") ?>">Logout</a>
 									</li>

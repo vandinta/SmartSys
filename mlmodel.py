@@ -3,7 +3,6 @@ import math
 import re
 from os import path
 from datetime import datetime
-# import MySQLdb
 import mysql.connector
 
 # Data Fetcher
@@ -27,18 +26,6 @@ import matplotlib.pyplot as plt
 
 # Get Variable
 import sys
-
-# DB
-# HOST = "localhost"
-# USERNAME = "root"
-# PASSWORD = ""
-# DATABASE = "db_smartsys"
-# mydb = mysql.connector.connect(
-#   host="localhost",
-#   user="root",
-#   password="",
-#   database="db_smartsys"
-# )
 
 # Kolom Dataset
 FIELD_CLOSE = 'Pembuatan'
@@ -232,7 +219,6 @@ def main():
   ValPredictions = scaler.inverse_transform(ValPredictions)
 
   print('\n==== Hasil Validasi Prakiraan ====')
-  # print('Jumlah Data : ', len(ValPredictions))
 
   # RMSE
   rmseval = np.sqrt(np.mean(ValPredictions - yVal) ** 2)
@@ -263,8 +249,8 @@ def main():
   if akurasi < batasmin:
     main()
   else:
-    # namamodel = sys.argv[1] + '.h5'
     namamodel = 'my_model' + '.h5'
+    id = int(sys.argv[5])
     # DB
     mydb = mysql.connector.connect(
       host="localhost",
@@ -272,15 +258,11 @@ def main():
       password="",
       database="db_smartsys"
     )
-    sql_cek = "SELECT nilai_akurasi FROM tb_model WHERE nama_model = %s"
+    sql_cek = "SELECT nilai_akurasi FROM tb_model WHERE id_barang = %s"
     cursor = mydb.cursor()
-    cursor.execute(sql_cek, (namamodel,))
+    cursor.execute(sql_cek, (id,))
     nilaidb = cursor.fetchall()
-    # nilaidb = float(record[0])
-    # print(record)
     if nilaidb == []:
-      id = 1
-      print('nilai 0')
       model.save('c:/xampp/htdocs/SmartSys/public/model/' + namamodel)
       sql_insert = "INSERT INTO tb_model (id_barang, nama_model, nilai_akurasi) VALUES (%s, %s, %s) "
       record_insert = (id, namamodel, akurasi)
@@ -288,33 +270,13 @@ def main():
       cursor.execute(sql_insert, record_insert)
       mydb.commit()
     else:
-      print('nilai 1')
       if nilaidb < akurasi:
-        print('nilai 2')
         model.save('c:/xampp/htdocs/SmartSys/public/model/' + namamodel)
         sql_update = "UPDATE tb_model set nilai_akurasi = %s where namamodel = %s"
         input_data = (akurasi, namamodel)
         cursor = mydb.cursor()
         cursor.execute(sql_update, input_data)
         mydb.commit()
-    # DB
-    # connection = mysql.connector.connect(
-    #   host="localhost",
-    #   user="root",
-    #   password="",
-    #   database="db_smartsys"
-    # )
-    # sql_select_Query = "SELECT stok_barang FROM tb_barang WHERE nama_barang = %s"
-    # cursor = connection.cursor()
-    # cursor.execute(sql_select_Query, (namamodel))
-    # # get all records
-    # barang = cursor.fetchall()
-    # for brg in barang:
-    #   print(brg)
-    # if myresult == 0:
-    #   # if akurasi > akurasidb:
-    #   print('nulll')
-    # model.save('c:/xampp/htdocs/SmartSys/public/model/' + 'my_model.h5')
   
 if __name__ == '__main__':
   main()

@@ -84,16 +84,23 @@ class MLController extends BaseController
 
         $rules = [
             'id_barang' => 'required',
+            'lim_akurasi' => 'required|numeric',
         ];
 
         $messages = [
             "id_barang" => [
-                "required" => "{field} tidak boleh kosong",
+                "required" => "Nama Barang tidak boleh kosong",
             ],
+            "lim_akurasi" => [
+                "required" => "Limit Nilai Akurasi Tidak Boleh Kosong",
+                "numeric" => "Limit Nilai Akurasi harus berisi angka",
+            ]
         ];
 
         if ($this->validate($rules, $messages)) {
             $id_barang = $this->request->getVar("id_barang");
+            $lim_akurasi = $this->request->getVar("lim_akurasi");
+
             $nama_barang = $this->barangmodel->select('nama_barang')->where('id_barang', $id_barang)->first();
             $penjualan = $this->ordermodel->select('bulan')->selectSum('jumlah_barang')->where('id_barang', $id_barang)->groupBy('bulan')->findAll();
             // $tgl_awal = $this->ordermodel->selectMin('bulan')->where('id_barang', $id_barang)->first();
@@ -105,8 +112,6 @@ class MLController extends BaseController
             if ($penjualan == null) {
                 $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
                 return redirect()->to("/datamodel/tambah");
-                // $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-                // return redirect()->to("/datamodel");
             }
 
             $filename = strtolower(str_replace(" ", "_", $nama_barang['nama_barang']));
@@ -114,25 +119,12 @@ class MLController extends BaseController
             $this->exportCsv($penjualan, $filename);
 
             if (file_exists('machine/' . $filename . '.csv')) {
-                $filename = $filename . '.csv';
-                $this->createmodel($tgl_awal, $tgl_akhir);
+                $filename = 'dataset_produksi_susu';
+                $this->createmodel($filename, $tgl_awal, $tgl_akhir, $lim_akurasi, $id_barang);
             } else {
                 $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
                 return redirect()->to("/datamodel/tambah");
             }
-
-            // if (!file_exists('machine/' . $filename . '.csv')) {
-            //     $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-            //     return redirect()->to("/datamodel/tambah");
-            // }
-
-            // if (file_exists('model/my_model.py')) {
-            //     session()->setFlashdata("berhasil_tambah", "Data Barang Berhasil Ditambahkan");
-            //     return redirect()->to("/datamodel");
-            // } else {
-            //     $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-            //     return redirect()->to("/datamodel/tambah");
-            // }
 
             if (file_exists('model/my_model.h5')) {
                 session()->setFlashdata("berhasil_tambah", "Data Barang Berhasil Ditambahkan");
@@ -191,35 +183,12 @@ class MLController extends BaseController
         // exit();
     }
 
-    function createmodel($tgl_awal, $tgl_akhir)
+    function createmodel($filename, $tgl_awal, $tgl_akhir, $lim_akurasi, $id_barang)
     {
-        $filename = 'dataset_produksi_susu';
-        $akurasi = 45;
         $py = 'C:/Users/User/AppData/Local/Programs/Python/Python39/python.exe';
         $file = 'c:/xampp/htdocs/SmartSys/mlmodel.py';
-        $command = escapeshellcmd("$py $file $filename $tgl_awal $tgl_akhir $akurasi");
-        // shell_exec('C:/Users/User/AppData/Local/Programs/Python/Python39/python.exe c:/xampp/htdocs/SmartSys/mlmodel.py');
-        // $output = exec('python mlmodel.py');
-        // echo $output;
-        // $py = escapeshellcmd('python mlmodel.py');
+        $command = escapeshellcmd("$py $file $filename $tgl_awal $tgl_akhir $lim_akurasi $id_barang");
         $hasil = shell_exec($command);
-        // $py = escapeshellcmd("python machine/main.py $filename $tgl_awal $tgl_akhir");
-        // $hasil = shell_exec($py);
-        // return $hasil;
-        // echo $hasil;
-        // $hasil = shell_exec("python \SmartSys\mlmodel.py");
-        // echo $hasil;
-        // echo $filename;
-        // $output = exec('python mlmodel.py');
-        // exec("/usr/bin/python mlmodel.py");
-        // echo $output;
-        // passthru("python mlmodel.py");
-        // system($command, $return);
-        // echo $return;
-        // $cmd = $command;
-        // echo $cmd;
-        // exec("$py $file", $output, $return);
-        // echo $output;
         // var_dump($hasil);
         // die;
         return $hasil;
