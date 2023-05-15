@@ -3,26 +3,37 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\PenjualanModel;
 use App\Models\UsersModel;
 use App\Models\CartModel;
+use App\Models\OrderModel;
+use App\Models\BarangModel;
 use Firebase\JWT\JWT;
+use PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel\Days;
+use PHPUnit\Framework\Constraint\Count;
 
 class AuthController extends BaseController
 {
     private $session;
     private $sendemail;
+    protected $penjualanmodel;
     protected $usersmodel;
     protected $cartmodel;
+    protected $ordermodel;
+    protected $barangmodel;
     protected $decoded;
 
     public function __construct()
     {
-        helper(['cookie', 'date', 'tgl_indo', 'form']);
+        helper(['cookie', 'date', 'tgl_indo', 'form', 'rupiah']);
 
         $this->session = \Config\Services::session();
         $this->sendemail = \Config\Services::email();
         $this->usersmodel = new UsersModel();
         $this->cartmodel = new Cartmodel();
+        $this->penjualanmodel = new PenjualanModel();
+        $this->ordermodel = new Ordermodel();
+        $this->barangmodel = new Barangmodel();
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -41,9 +52,38 @@ class AuthController extends BaseController
             "validation" => \Config\Services::validation(),
         ];
 
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+        $bulan = date("Y-m", $t);
+        $bulan = $bulan . '-01';
+
+        $transaksi = $this->penjualanmodel->selectCount("id_penjualan")->like('created_at', $time)->findAll();
+
+        $items = $this->ordermodel->selectSum("jumlah_barang")->like('created_at', $time)->findAll();
+
+        $penjualan = $this->ordermodel->like('created_at', $time)->findAll();
+        
+        $keuntungan = 0;
+        for ($i=0; $i < count($penjualan); $i++) { 
+            $keuntungan += ($penjualan[$i]['harga_jual_barang'] - $penjualan[$i]['harga_beli_barang']) * $penjualan[$i]['jumlah_barang'];
+        }
+
+        $barang = $this->barangmodel->findAll();
+        for ($a=0; $a < count($barang); $a++) { 
+            $terbanyak[$a] = $this->ordermodel->select('tb_barang.nama_barang, tb_order.bulan')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$a]['id_barang'])->like('tb_order.bulan', $bulan)->groupBy('tb_order.bulan')->findAll();
+        }
+
+        // var_dump($terbanyak);
+        // die;
+
         $nilai = [
             "menu" => "dashboard",
-            "submenu" => ""
+            "submenu" => "",
+            "transaksi" => $transaksi[0]["id_penjualan"],
+            "items" => $items[0]["jumlah_barang"],
+            "keuntungan" => $keuntungan,
+            "stok" => $this->barangmodel->orderBy('stok_barang', 'ASC')->limit(5)->find(),
+            // "terlaris" => $terbanyak
         ];
 
         if (get_cookie("access_token")) {
