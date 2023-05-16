@@ -43,33 +43,25 @@
               <thead>
                 <tr>
                   <th style="width: 9%">No</th>
-                  <th>Penjualan</th>
-                  <th>Total Pembelian</th>
-                  <th style="width: 8%" <?php if ($_SESSION['role'] == "superadmin") {
-                                          echo "hidden";
-                                        } ?>>Aksi</th>
+                  <th>Nama Barang</th>
+                  <th>Prakiraan</th>
+                  <th style="width: 8%">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
-                <?php foreach ($penjualan as $pjl) : ?>
+                <?php foreach ($prakiraan as $pra) : ?>
                   <tr>
                     <th scope="row"><?= $no++ ?></th>
-                    <td><?= $pjl["nama_penjualan"] ?></td>
-                    <td><?= rupiah($pjl["total_harga"]) ?></td>
-                    <?php  ?>
-                    <td <?php if ($_SESSION['role'] == "superadmin") {
-                          echo "hidden";
-                        } ?>>
+                    <td><?= $pra["nama_barang"] ?></td>
+                    <td><?= $pra["nama_prakiraan"] ?></td>
+                    <td>
                       <div class="form-button-action">
-                        <a href="<?= base_url('/dataprakiraan/ubah/') . "/" . $pjl["id_penjualan"] ?>">
+                        <a href="<?= base_url('/dataprakiraan/ubah/') . "/" . $pra["id_prakiraan"] ?>">
                           <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
                             <i class="fa fa-eye"></i>
                           </button>
                         </a>
-                        <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $pjl["id_penjualan"] ?>)" data-original-title="Hapus">
-                          <i class="fa fa-times"></i>
-                        </button>
                       </div>
                     </td>
                   </tr>
