@@ -54,8 +54,10 @@
         <div class="card card-dark bg-secondary-gradient">
           <div class="card-body pb-0">
             <h2 class="mb-2"><?php if ($items != null) {
-              echo $items;
-            } echo 0; ?></h2>
+                                echo $items;
+                              } else {
+                                echo 0;
+                              } ?></h2>
             <p>Item Terjual Hari Ini</p>
           </div>
         </div>
@@ -64,8 +66,10 @@
         <div class="card card-dark bg-success2">
           <div class="card-body pb-0">
             <h2 class="mb-2"><?php if ($keuntungan != null) {
-              echo rupiah($keuntungan);
-            } echo 0; ?></h2>
+                                echo rupiah($keuntungan);
+                              } else {
+                                echo 0;
+                              } ?></h2>
             <p>Keuntungan Hari Ini</p>
           </div>
         </div>
@@ -75,70 +79,40 @@
       <div class="col-md-4">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Top Products</div>
+            <div class="card-title">Penjualan Barang Hari Ini</div>
           </div>
-          <div class="card-body pb-0">
-            
+          <div class="card-body pb-0" style="display:block; height:350px; overflow:auto;">
+            <?php foreach ($harian as $har) : ?>
               <div class="d-flex">
                 <div class="flex-1 ml-2 pt-1">
-                  <h4 class="mb-1">aaaa</h4>
+                  <h4 class="mb-1"><?= $har['nama_barang']; ?></h4>
                 </div>
                 <div class="float-right pt-1">
-                  <h4 class="text-info">aaaa</h4>
+                  <h4 class="text-info"><?= $har['jumlah_barang'] . ' Item'; ?></h4>
                 </div>
               </div>
               <div class="separator-dashed"></div>
+            <?php endforeach; ?>
           </div>
         </div>
       </div>
       <div class="col-md-4">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Top Products</div>
+            <div class="card-title">Penjualan Barang Bulan Ini</div>
           </div>
-          <div class="card-body pb-0">
-            <div class="d-flex">
-              <div class="avatar">
-                <img src="../assets/img/logoproduct.svg" alt="..." class="avatar-img rounded-circle">
+          <div class="card-body pb-0" style="display:block; height:350px; overflow:auto;">
+            <?php foreach ($bulanan as $bul) : ?>
+              <div class="d-flex">
+                <div class="flex-1 ml-2 pt-1">
+                  <h4 class="mb-1"><?= $bul['nama_barang']; ?></h4>
+                </div>
+                <div class="float-right pt-1">
+                  <h4 class="text-info"><?= $bul['jumlah_barang'] . ' Item'; ?></h4>
+                </div>
               </div>
-              <div class="flex-1 pt-1 ml-2">
-                <h6 class="fw-bold mb-1">CSS</h6>
-                <small class="text-muted">Cascading Style Sheets</small>
-              </div>
-              <div class="d-flex ml-auto align-items-center">
-                <h3 class="text-info fw-bold">+$17</h3>
-              </div>
-            </div>
-            <div class="separator-dashed"></div>
-            <div class="d-flex">
-              <div class="avatar">
-                <img src="../assets/img/logoproduct.svg" alt="..." class="avatar-img rounded-circle">
-              </div>
-              <div class="flex-1 pt-1 ml-2">
-                <h6 class="fw-bold mb-1">J.CO Donuts</h6>
-                <small class="text-muted">The Best Donuts</small>
-              </div>
-              <div class="d-flex ml-auto align-items-center">
-                <h3 class="text-info fw-bold">+$300</h3>
-              </div>
-            </div>
-            <div class="separator-dashed"></div>
-            <div class="d-flex">
-              <div class="avatar">
-                <img src="../assets/img/logoproduct3.svg" alt="..." class="avatar-img rounded-circle">
-              </div>
-              <div class="flex-1 pt-1 ml-2">
-                <h6 class="fw-bold mb-1">Ready Pro</h6>
-                <small class="text-muted">Bootstrap 4 Admin Dashboard</small>
-              </div>
-              <div class="d-flex ml-auto align-items-center">
-                <h3 class="text-info fw-bold">+$350</h3>
-              </div>
-            </div>
-            <div class="separator-dashed"></div>
-            <div class="pull-in">
-              <canvas id="topProductsChart"></canvas>
-            </div>
+              <div class="separator-dashed"></div>
+            <?php endforeach; ?>
           </div>
         </div>
       </div>

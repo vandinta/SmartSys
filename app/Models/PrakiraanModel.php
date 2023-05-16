@@ -4,22 +4,21 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class OrderModel extends Model
+class PrakiraanModel extends Model
 {
     protected $DBGroup          = 'default';
-    protected $table            = 'tb_order';
-    protected $primaryKey       = 'id_order';
+    protected $table            = 'tb_prakiraan';
+    protected $primaryKey       = 'id_prakiraan';
     protected $useAutoIncrement = true;
     protected $insertID         = 0;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_penjualan', 'id_barang', 'harga_beli_barang', 'harga_jual_barang', 'jumlah_barang', 'bulan', 'created_at', 'updated_at'];
+    protected $allowedFields    = ['id_barang', 'nama_prakiraan', 'created_at', 'updated_at'];
 
     // Dates
     protected $useTimestamps = false;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
-
 }

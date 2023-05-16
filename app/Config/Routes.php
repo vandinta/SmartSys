@@ -102,7 +102,15 @@ $routes->group('/datamodel', static function ($routes) {
     $routes->match(['get', 'post'], "create", "MLController::model");
 });
 
-$routes->get("/prakiraan", "AuthController::index");
+$routes->group('/dataprakiraan', static function ($routes) {
+    $routes->get("", "PrakiraanController::index");
+    $routes->get("tambah", "PrakiraanController::create");
+    $routes->get("ubah/(:num)", "PrakiraanController::ubah/$1");
+    $routes->post("input", "PrakiraanController::save");
+    $routes->post("edit/(:num)", "PrakiraanController::ganti/$1");
+    $routes->delete("(:num)", "PrakiraanController::delete/$1");
+});
+
 $routes->get("/history", "AuthController::index");
 
 $routes->get("/ubahpassword/(:segment)", "AuthController::ubah/$1");

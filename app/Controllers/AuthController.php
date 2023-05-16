@@ -57,24 +57,36 @@ class AuthController extends BaseController
         $bulan = date("Y-m", $t);
         $bulan = $bulan . '-01';
 
+        $waktu_awal = $time . " 00:00:01";
+        $waktu_akhir = $time . " 23:59:59";
+
         $transaksi = $this->penjualanmodel->selectCount("id_penjualan")->like('created_at', $time)->findAll();
 
         $items = $this->ordermodel->selectSum("jumlah_barang")->like('created_at', $time)->findAll();
 
         $penjualan = $this->ordermodel->like('created_at', $time)->findAll();
-        
+
         $keuntungan = 0;
-        for ($i=0; $i < count($penjualan); $i++) { 
+        for ($i = 0; $i < count($penjualan); $i++) {
             $keuntungan += ($penjualan[$i]['harga_jual_barang'] - $penjualan[$i]['harga_beli_barang']) * $penjualan[$i]['jumlah_barang'];
         }
 
         $barang = $this->barangmodel->findAll();
-        for ($a=0; $a < count($barang); $a++) { 
-            $terbanyak[$a] = $this->ordermodel->select('tb_barang.nama_barang, tb_order.bulan')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$a]['id_barang'])->like('tb_order.bulan', $bulan)->groupBy('tb_order.bulan')->findAll();
+        for ($a = 0; $a < count($barang); $a++) {
+            $penjualanbulanan[$a] = $this->ordermodel->select('tb_barang.nama_barang, tb_order.bulan')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$a]['id_barang'])->like('tb_order.bulan', $bulan)->first();
+
+            if ($penjualanbulanan[$a]['nama_barang'] != null) {
+                $hasilbulanan[$a] = $penjualanbulanan[$a];
+            }
         }
 
-        // var_dump($terbanyak);
-        // die;
+        for ($b = 0; $b < count($barang); $b++) {
+            $penjualanharian[$b] = $this->ordermodel->select('tb_barang.nama_barang')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$b]['id_barang'])->where("tb_order.created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->first();
+
+            if($penjualanharian[$b]['nama_barang'] != null){
+                $hasilharian[$b] = $penjualanharian[$b];
+            }
+        }
 
         $nilai = [
             "menu" => "dashboard",
@@ -83,7 +95,8 @@ class AuthController extends BaseController
             "items" => $items[0]["jumlah_barang"],
             "keuntungan" => $keuntungan,
             "stok" => $this->barangmodel->orderBy('stok_barang', 'ASC')->limit(5)->find(),
-            // "terlaris" => $terbanyak
+            "harian" => $hasilharian,
+            "bulanan" => $hasilbulanan
         ];
 
         if (get_cookie("access_token")) {
@@ -513,7 +526,7 @@ class AuthController extends BaseController
             }
 
             $password_baru = md5($this->request->getVar("password_baru"));
-            
+
             $data = [
                 "user_id" => $id,
                 "password" => $password_baru
