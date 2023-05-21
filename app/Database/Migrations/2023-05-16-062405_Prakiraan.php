@@ -9,11 +9,17 @@ class Prakiraan extends Migration
     public function up()
 	{
 		$this->forge->addField([
+			'id_prakiraan'          => [
+				'type'           => 'INT',
+				'constraint'     => 5,
+				'unsigned'       => true,
+				'auto_increment' => true
+			],
 			'id_barang'          => [
 				'type'           => 'INT',
 				'constraint'     => 5,
 				'unsigned'       => true,
-				'null'			=> true,
+				'null'			=> false,
 			],
 			'nama_prakiraan'       => [
 				'type'           => 'VARCHAR',
@@ -25,7 +31,7 @@ class Prakiraan extends Migration
 		]);
 
 		$this->forge->addKey('id_prakiraan', TRUE);
-		$this->forge->addForeignKey('id_barang', 'tb_barang', 'id_barang', 'CASCADE', 'SET NULL');
+		$this->forge->addForeignKey('id_barang', 'tb_barang', 'id_barang', 'CASCADE', 'CASCADE');
 		$this->forge->createTable('tb_prakiraan', TRUE);
 	}
 

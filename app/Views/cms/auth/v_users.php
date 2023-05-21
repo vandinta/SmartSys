@@ -49,9 +49,9 @@
                     <td><?= $us["role"] ?></td>
                     <td>
                       <div class="form-button-action">
-                        <a href="<?= base_url('/datausers/ubah/') . "/" . $us["user_id"] ?>">
-                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
-                            <i class="fa fa-eye"></i>
+                        <a href="<?= base_url('/datausers/ubah/') . "/" . $us["email"] ?>">
+                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-primary" data-original-title="Detail">
+                            <i class="fa fa-edit"></i>
                           </button>
                         </a>
                         <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $us["user_id"] ?>)" data-original-title="Hapus">

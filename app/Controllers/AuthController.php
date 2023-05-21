@@ -72,19 +72,31 @@ class AuthController extends BaseController
         }
 
         $barang = $this->barangmodel->findAll();
-        for ($a = 0; $a < count($barang); $a++) {
-            $penjualanbulanan[$a] = $this->ordermodel->select('tb_barang.nama_barang, tb_order.bulan')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$a]['id_barang'])->like('tb_order.bulan', $bulan)->first();
 
-            if ($penjualanbulanan[$a]['nama_barang'] != null) {
-                $hasilbulanan[$a] = $penjualanbulanan[$a];
+        $cekbulan = $this->ordermodel->like('bulan', $bulan)->findAll();
+        if ($cekbulan == null) {
+            $hasilbulanan = 'kosong';
+        } else {
+            for ($a = 0; $a < count($barang); $a++) {
+                $penjualanbulanan[$a] = $this->ordermodel->select('tb_barang.nama_barang, tb_order.bulan')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$a]['id_barang'])->like('tb_order.bulan', $bulan)->first();
+
+                if ($penjualanbulanan[$a]['nama_barang'] != null) {
+                    $hasilbulanan[$a] = $penjualanbulanan[$a];
+                }
             }
         }
 
-        for ($b = 0; $b < count($barang); $b++) {
-            $penjualanharian[$b] = $this->ordermodel->select('tb_barang.nama_barang')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$b]['id_barang'])->where("tb_order.created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->first();
+        $cekhari = $this->ordermodel->where("created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->findAll();
 
-            if($penjualanharian[$b]['nama_barang'] != null){
-                $hasilharian[$b] = $penjualanharian[$b];
+        if ($cekhari == null) {
+            $hasilharian = 'kosong';
+        } else {
+            for ($b = 0; $b < count($barang); $b++) {
+                $penjualanharian[$b] = $this->ordermodel->select('tb_barang.nama_barang')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$b]['id_barang'])->where("tb_order.created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->first();
+
+                if ($penjualanharian[$b]['nama_barang'] != null) {
+                    $hasilharian[$b] = $penjualanharian[$b];
+                }
             }
         }
 
@@ -117,7 +129,7 @@ class AuthController extends BaseController
         }
 
         $data = [
-            "menu" => "users",
+            "menu" => "datausers",
             "submenu" => " ",
             "title" => "Data Users",
             "users" => $this->usersmodel->orderBy('created_at', 'DESC')->findAll(),
@@ -343,9 +355,12 @@ class AuthController extends BaseController
                 $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
 
                 $link = base_url() . "/aktivasi?token=" . $token;
+
+                $linkaduan = base_url() . "/viewgetemail";
                 $datatemplate = [
                     "email" => $dataemail,
                     "link" => $link,
+                    "linkaduan" => $linkaduan,
                     "logo" => base_url("Atlantis/assets/img/logo.svg")
                 ];
 
@@ -427,9 +442,11 @@ class AuthController extends BaseController
                     $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
 
                     $link = base_url() . "/aktivasi?token=" . $token;
+                    $linkaduan = base_url() . "/viewgetemail";
                     $datatemplate = [
                         "email" => $dataemail,
                         "link" => $link,
+                        "linkaduan" => $linkaduan,
                         "logo" => base_url("Atlantis/assets/img/logo.svg")
                     ];
 

@@ -46,6 +46,12 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $waktu_awal = $time . " 00:00:01";
+        $waktu_akhir = $time . " 23:59:59";
+
         $delete_all = $this->cartmodel->delete_all();
 
         $data = [
@@ -53,6 +59,8 @@ class PenjualanController extends BaseController
             "submenu" => "",
             "title" => "Data Penjualan",
             "penjualan" => $this->penjualanmodel->orderBy('created_at', 'DESC')->findAll(),
+            "waktu_awal" => $waktu_awal,
+            "waktu_akhir" => $waktu_akhir,
         ];
 
         return view("cms/penjualan/v_penjualan", $data);
@@ -529,6 +537,11 @@ class PenjualanController extends BaseController
             return $this->response->setJSON([
                 'error' => false,
                 'message' => 'Data ' . $cek['nama_penjualan'] . ' Berhasil Dihapus!'
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'error' => true,
+                'message' => 'Data ' . $cek['nama_penjualan'] . ' Gagal Dihapus!'
             ]);
         }
     }

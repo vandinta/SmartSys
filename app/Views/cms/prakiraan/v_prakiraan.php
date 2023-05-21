@@ -25,12 +25,12 @@
           <div class="d-flex align-items-center">
             <h4 class="card-title"><?= $title; ?></h4>
             <div class="ml-auto">
-              <button type="button" class="btn btn-icon btn-round btn-info mr-1" data-toggle="modal" data-target="#importModal">
+              <!-- <button type="button" class="btn btn-icon btn-round btn-info mr-1" data-toggle="modal" data-target="#importModal">
                 <i class="fa fa-sign-in-alt"></i>
               </button>
               <button type="button" class="btn btn-icon btn-round btn-info" data-toggle="modal" data-target="#exportModal">
                 <i class="fa fa-sign-out-alt"></i>
-              </button>
+              </button> -->
             </div>
             <a href="<?php echo base_url('/dataprakiraan/tambah') ?>" type="button" class="btn btn-primary btn-round ml-2" <?php if ($_SESSION['role'] == "superadmin") {
                                                                                                                               echo "hidden";
@@ -42,22 +42,22 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
+                  <th style="width: 10%; text-align:center;">No</th>
                   <th>Nama Barang</th>
-                  <th>Prakiraan</th>
-                  <th style="width: 8%">Aksi</th>
+                  <!-- <th>Prakiraan</th> -->
+                  <th style="width: 14%; text-align:center;">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
                 <?php foreach ($prakiraan as $pra) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
+                    <th scope="row" style="text-align:center;"><?= $no++ ?></th>
                     <td><?= $pra["nama_barang"] ?></td>
-                    <td><?= $pra["nama_prakiraan"] ?></td>
-                    <td>
+                    <!-- <td><?= $pra["nama_prakiraan"] ?></td> -->
+                    <td style="text-align:center;">
                       <div class="form-button-action">
-                        <a href="<?= base_url('/dataprakiraan/ubah/') . "/" . $pra["id_prakiraan"] ?>">
+                        <a href="<?= base_url('/dataprakiraan/detail/') . "/" . $pra["id_prakiraan"] ?>">
                           <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
                             <i class="fa fa-eye"></i>
                           </button>

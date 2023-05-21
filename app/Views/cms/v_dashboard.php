@@ -82,17 +82,21 @@
             <div class="card-title">Penjualan Barang Hari Ini</div>
           </div>
           <div class="card-body pb-0" style="display:block; height:350px; overflow:auto;">
-            <?php foreach ($harian as $har) : ?>
-              <div class="d-flex">
-                <div class="flex-1 ml-2 pt-1">
-                  <h4 class="mb-1"><?= $har['nama_barang']; ?></h4>
+            <?php if ($harian == 'kosong') { ?>
+              <h4 class="mb-1">Tidak Ada Penjualan</h4>
+            <?php } else { ?>
+              <?php foreach ($harian as $har) : ?>
+                <div class="d-flex">
+                  <div class="flex-1 ml-2 pt-1">
+                    <h4 class="mb-1"><?= $har['nama_barang']; ?></h4>
+                  </div>
+                  <div class="float-right pt-1">
+                    <h4 class="text-info"><?= $har['jumlah_barang'] . ' Item'; ?></h4>
+                  </div>
                 </div>
-                <div class="float-right pt-1">
-                  <h4 class="text-info"><?= $har['jumlah_barang'] . ' Item'; ?></h4>
-                </div>
-              </div>
-              <div class="separator-dashed"></div>
-            <?php endforeach; ?>
+                <div class="separator-dashed"></div>
+              <?php endforeach; ?>
+            <?php } ?>
           </div>
         </div>
       </div>
@@ -102,17 +106,21 @@
             <div class="card-title">Penjualan Barang Bulan Ini</div>
           </div>
           <div class="card-body pb-0" style="display:block; height:350px; overflow:auto;">
-            <?php foreach ($bulanan as $bul) : ?>
-              <div class="d-flex">
-                <div class="flex-1 ml-2 pt-1">
-                  <h4 class="mb-1"><?= $bul['nama_barang']; ?></h4>
+            <?php if ($bulanan == 'kosong') { ?>
+              <h4 class="mb-1">Tidak Ada Penjualan</h4>
+            <?php } else { ?>
+              <?php foreach ($bulanan as $bul) : ?>
+                <div class="d-flex">
+                  <div class="flex-1 ml-2 pt-1">
+                    <h4 class="mb-1"><?= $bul['nama_barang']; ?></h4>
+                  </div>
+                  <div class="float-right pt-1">
+                    <h4 class="text-info"><?= $bul['jumlah_barang'] . ' Item'; ?></h4>
+                  </div>
                 </div>
-                <div class="float-right pt-1">
-                  <h4 class="text-info"><?= $bul['jumlah_barang'] . ' Item'; ?></h4>
-                </div>
-              </div>
-              <div class="separator-dashed"></div>
-            <?php endforeach; ?>
+                <div class="separator-dashed"></div>
+              <?php endforeach; ?>
+            <?php } ?>
           </div>
         </div>
       </div>
@@ -127,7 +135,9 @@
             <?php foreach ($stok as $stk) : ?>
               <div class="d-flex">
                 <div class="flex-1 ml-2 pt-1">
-                  <h4 class="mb-1"><?= $stk["nama_barang"] ?> <?php if ($stk["stok_barang"] < 20) {
+                  <h4 class="mb-1"><?= $stk["nama_barang"] ?> <?php if ($stk["stok_barang"] == 0) {
+                                                                echo '<span class="text-dark pl-3">Habis</span>';
+                                                              } elseif ($stk["stok_barang"] < 20) {
                                                                 echo '<span class="text-danger pl-3">Menipis</span>';
                                                               } elseif ($stk["stok_barang"] < 50) {
                                                                 echo '<span class="text-warning pl-3">Sedang</span>';

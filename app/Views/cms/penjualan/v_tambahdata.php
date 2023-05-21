@@ -35,7 +35,7 @@
             <?= csrf_field() ?>
             <div class="form-group">
               <label for="pencarian">Cari Nama Barang</label>
-              <select class="form-control <?= validation_show_error("id_barang") ? 'is-invalid' : ""; ?>" style="margin: 10px;" id="id_barang" name="id_barang" onchange="Hitung(this);" autofocus>
+              <select class="form-control <?= validation_show_error("id_barang") ? 'is-invalid' : ""; ?>" style="margin: 10px; width: 100%;" id="id_barang" name="id_barang" onchange="Hitung(this);" autofocus>
                 <option value=""></option>
                 <?php foreach ($barang as $brg) : ?>
                   <option data-harga="<?= $brg['harga_jual'] ?>" data-nama="<?= $brg['nama_barang'] ?>" value="<?= $brg['id_barang'] ?>"><?= $brg['nama_barang'] ?></option>

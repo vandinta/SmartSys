@@ -51,7 +51,8 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <h6 class="float-left">*Semakin besar batas nilai akurasi yang diinginkan maka semakin lama waktu tunggu</h6>
+                  <h6>*Semakin besar batas nilai akurasi yang diinginkan maka semakin lama waktu tunggu</h6>
+                  <h6>*Rekomendasi batas nilai akurasi asalah 55 - 80</h6>
                 </div>
                 <br>
                 <div class="card-action">
