@@ -38,8 +38,8 @@
               <input type="text" class="form-control <?= validation_show_error("nama_penjualan") ? 'is-invalid' : ""; ?>" id="nama_penjualan" name="nama_penjualan" value="<?= old("nama_penjualan")
                                                                                                                                                                               ? old("nama_penjualan")
                                                                                                                                                                               : $penjualan["nama_penjualan"] ?>" placeholder="Nama Penjualan" <?php if ($expired != 1) {
-                                                                                                                                                                            echo 'disabled';
-                                                                                                                                                                          } ?>>
+                                                                                                                                                                                                                                                echo 'disabled';
+                                                                                                                                                                                                                                              } ?>>
               <div class="invalid-feedback">
                 <?= validation_show_error("nama_penjualan") ?>
               </div>
@@ -119,6 +119,9 @@
               <?php endforeach; ?>
             </tbody>
           </table>
+        </div>
+        <div class="card-action">
+          <a href="<?php echo base_url('/datapenjualan') ?>" type="button" class="btn btn-outline-danger float-right mr-2">Kembali</a>
         </div>
       </div>
     </div>
@@ -235,7 +238,7 @@
 
     $('#harga_barang').val(harga);
     $('#jumlah_harga').val(total);
-    $('#jumlah_harga_hide').val(total);
+    $('#jumlah_harga_barang').val(total);
   }
 
   $(document).ready(function() {

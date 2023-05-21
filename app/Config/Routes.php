@@ -70,7 +70,7 @@ $routes->group('/databarang', static function ($routes) {
 $routes->group('/datausers', static function ($routes) {
     $routes->get("", "AuthController::listUsers");
     $routes->get("tambah", "AuthController::create");
-    $routes->get("ubah/(:num)", "AuthController::ubah/$1");
+    $routes->get("ubah/(:segment)", "AuthController::ubah/$1");
     $routes->post("input", "AuthController::save");
     $routes->post("edit/(:num)", "AuthController::ganti/$1");
     $routes->delete("(:num)", "AuthController::delete/$1");
@@ -102,7 +102,15 @@ $routes->group('/datamodel', static function ($routes) {
     $routes->match(['get', 'post'], "create", "MLController::model");
 });
 
-$routes->get("/prakiraan", "AuthController::index");
+$routes->group('/dataprakiraan', static function ($routes) {
+    $routes->get("", "PrakiraanController::index");
+    $routes->get("tambah", "PrakiraanController::create");
+    $routes->get("detail/(:num)", "PrakiraanController::detail/$1");
+    $routes->post("input", "PrakiraanController::save");
+    $routes->post("edit/(:num)", "PrakiraanController::ganti/$1");
+    $routes->delete("(:num)", "PrakiraanController::delete/$1");
+});
+
 $routes->get("/history", "AuthController::index");
 
 $routes->get("/ubahpassword/(:segment)", "AuthController::ubah/$1");

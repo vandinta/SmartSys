@@ -67,7 +67,9 @@
                             <i class="fa fa-eye"></i>
                           </button>
                         </a>
-                        <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $pjl["id_penjualan"] ?>)" data-original-title="Hapus">
+                        <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $pjl["id_penjualan"] ?>)" data-original-title="Hapus" <?php if ($pjl["created_at"] <= $waktu_awal && $pjl["created_at"] <= $waktu_akhir) {
+                          echo 'hidden';
+                        } ?>>
                           <i class="fa fa-times"></i>
                         </button>
                       </div>
@@ -261,6 +263,20 @@
               }
             })
             fetchAllPosts();
+          },
+          error: function(response) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal Menghapus Data!',
+              text: response.message,
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'Oke',
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.reload(true);
+              }
+            })
+            fetchAllPosts();
           }
         });
       }
@@ -287,6 +303,14 @@
     Swal.fire({
       icon: 'error',
       title: 'Data Anda Tidak Sesuai!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+
+  <?php if (session()->getFlashdata('gagal_dihapus') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Data Gagal Tidak Hapus!',
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>

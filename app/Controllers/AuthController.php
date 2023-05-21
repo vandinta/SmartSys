@@ -3,26 +3,37 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\PenjualanModel;
 use App\Models\UsersModel;
 use App\Models\CartModel;
+use App\Models\OrderModel;
+use App\Models\BarangModel;
 use Firebase\JWT\JWT;
+use PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel\Days;
+use PHPUnit\Framework\Constraint\Count;
 
 class AuthController extends BaseController
 {
     private $session;
     private $sendemail;
+    protected $penjualanmodel;
     protected $usersmodel;
     protected $cartmodel;
+    protected $ordermodel;
+    protected $barangmodel;
     protected $decoded;
 
     public function __construct()
     {
-        helper(['cookie', 'date', 'tgl_indo', 'form']);
+        helper(['cookie', 'date', 'tgl_indo', 'form', 'rupiah']);
 
         $this->session = \Config\Services::session();
         $this->sendemail = \Config\Services::email();
         $this->usersmodel = new UsersModel();
         $this->cartmodel = new Cartmodel();
+        $this->penjualanmodel = new PenjualanModel();
+        $this->ordermodel = new Ordermodel();
+        $this->barangmodel = new Barangmodel();
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -41,9 +52,63 @@ class AuthController extends BaseController
             "validation" => \Config\Services::validation(),
         ];
 
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+        $bulan = date("Y-m", $t);
+        $bulan = $bulan . '-01';
+
+        $waktu_awal = $time . " 00:00:01";
+        $waktu_akhir = $time . " 23:59:59";
+
+        $transaksi = $this->penjualanmodel->selectCount("id_penjualan")->like('created_at', $time)->findAll();
+
+        $items = $this->ordermodel->selectSum("jumlah_barang")->like('created_at', $time)->findAll();
+
+        $penjualan = $this->ordermodel->like('created_at', $time)->findAll();
+
+        $keuntungan = 0;
+        for ($i = 0; $i < count($penjualan); $i++) {
+            $keuntungan += ($penjualan[$i]['harga_jual_barang'] - $penjualan[$i]['harga_beli_barang']) * $penjualan[$i]['jumlah_barang'];
+        }
+
+        $barang = $this->barangmodel->findAll();
+
+        $cekbulan = $this->ordermodel->like('bulan', $bulan)->findAll();
+        if ($cekbulan == null) {
+            $hasilbulanan = 'kosong';
+        } else {
+            for ($a = 0; $a < count($barang); $a++) {
+                $penjualanbulanan[$a] = $this->ordermodel->select('tb_barang.nama_barang, tb_order.bulan')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$a]['id_barang'])->like('tb_order.bulan', $bulan)->first();
+
+                if ($penjualanbulanan[$a]['nama_barang'] != null) {
+                    $hasilbulanan[$a] = $penjualanbulanan[$a];
+                }
+            }
+        }
+
+        $cekhari = $this->ordermodel->where("created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->findAll();
+
+        if ($cekhari == null) {
+            $hasilharian = 'kosong';
+        } else {
+            for ($b = 0; $b < count($barang); $b++) {
+                $penjualanharian[$b] = $this->ordermodel->select('tb_barang.nama_barang')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$b]['id_barang'])->where("tb_order.created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->first();
+
+                if ($penjualanharian[$b]['nama_barang'] != null) {
+                    $hasilharian[$b] = $penjualanharian[$b];
+                }
+            }
+        }
+
         $nilai = [
             "menu" => "dashboard",
-            "submenu" => ""
+            "submenu" => "",
+            "transaksi" => $transaksi[0]["id_penjualan"],
+            "items" => $items[0]["jumlah_barang"],
+            "keuntungan" => $keuntungan,
+            "stok" => $this->barangmodel->orderBy('stok_barang', 'ASC')->limit(5)->find(),
+            "harian" => $hasilharian,
+            "bulanan" => $hasilbulanan
         ];
 
         if (get_cookie("access_token")) {
@@ -64,7 +129,7 @@ class AuthController extends BaseController
         }
 
         $data = [
-            "menu" => "users",
+            "menu" => "datausers",
             "submenu" => " ",
             "title" => "Data Users",
             "users" => $this->usersmodel->orderBy('created_at', 'DESC')->findAll(),
@@ -290,9 +355,12 @@ class AuthController extends BaseController
                 $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
 
                 $link = base_url() . "/aktivasi?token=" . $token;
+
+                $linkaduan = base_url() . "/viewgetemail";
                 $datatemplate = [
                     "email" => $dataemail,
                     "link" => $link,
+                    "linkaduan" => $linkaduan,
                     "logo" => base_url("Atlantis/assets/img/logo.svg")
                 ];
 
@@ -374,9 +442,11 @@ class AuthController extends BaseController
                     $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
 
                     $link = base_url() . "/aktivasi?token=" . $token;
+                    $linkaduan = base_url() . "/viewgetemail";
                     $datatemplate = [
                         "email" => $dataemail,
                         "link" => $link,
+                        "linkaduan" => $linkaduan,
                         "logo" => base_url("Atlantis/assets/img/logo.svg")
                     ];
 
@@ -473,7 +543,7 @@ class AuthController extends BaseController
             }
 
             $password_baru = md5($this->request->getVar("password_baru"));
-            
+
             $data = [
                 "user_id" => $id,
                 "password" => $password_baru

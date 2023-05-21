@@ -27,7 +27,7 @@ class Barang extends Migration
 				'null'           => false,
 			],
 			'stok_barang'       => [
-				'type'           => 'VARCHAR',
+				'type'           => 'INT',
 				'constraint'     => 5,
 				'null'           => false,
 			],

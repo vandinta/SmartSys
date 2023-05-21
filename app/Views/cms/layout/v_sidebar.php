@@ -67,7 +67,7 @@
         <li class="nav-item <?= $menu == 'prakiraan' ? 'active' : '' ?>" <?php if ($_SESSION['role'] != "admin") {
                                                                           echo "hidden";
                                                                         } ?>>
-          <a href="#">
+          <a href="<?= base_url("/dataprakiraan") ?>">
             <i class="fas fa-chart-line"></i>
             <p>Prakiraan</p>
           </a>

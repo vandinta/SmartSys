@@ -46,6 +46,12 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $waktu_awal = $time . " 00:00:01";
+        $waktu_akhir = $time . " 23:59:59";
+
         $delete_all = $this->cartmodel->delete_all();
 
         $data = [
@@ -53,6 +59,8 @@ class PenjualanController extends BaseController
             "submenu" => "",
             "title" => "Data Penjualan",
             "penjualan" => $this->penjualanmodel->orderBy('created_at', 'DESC')->findAll(),
+            "waktu_awal" => $waktu_awal,
+            "waktu_akhir" => $waktu_akhir,
         ];
 
         return view("cms/penjualan/v_penjualan", $data);
@@ -530,6 +538,11 @@ class PenjualanController extends BaseController
                 'error' => false,
                 'message' => 'Data ' . $cek['nama_penjualan'] . ' Berhasil Dihapus!'
             ]);
+        } else {
+            return $this->response->setJSON([
+                'error' => true,
+                'message' => 'Data ' . $cek['nama_penjualan'] . ' Gagal Dihapus!'
+            ]);
         }
     }
 
@@ -747,6 +760,8 @@ class PenjualanController extends BaseController
                     $tanggal_jam = $tanggal . $jam;
                     $tanggal_penjualan = strtotime($tanggal_jam);
                     $waktu_penjualan = date("Y-m-d H:i:s", $tanggal_penjualan);
+                    $bulan_sekarang = date("Y-m", $tanggal_penjualan);
+                    $bulan = $bulan_sekarang . '-01';
                     $nama_penjualan = "Penjualan Pada Hari " . tgl_indonesia($waktu_penjualan);
                     $cekdatapenjualan = $this->penjualanmodel->where('nama_penjualan', $nama_penjualan)->first();
                     $datapenjualan = [
@@ -777,6 +792,7 @@ class PenjualanController extends BaseController
                         'jumlah_barang' => $value[4],
                         'harga_beli_barang' => $value[5],
                         'harga_jual_barang' => $value[6],
+                        'bulan' => $bulan,
                         'created_at' => $waktu_penjualan
                     ];
                     if ($cekpenjualanorder == null) {
@@ -800,6 +816,8 @@ class PenjualanController extends BaseController
                         $tanggal_jam = $tanggal . $jam;
                         $tanggal_penjualan = strtotime($tanggal_jam);
                         $waktu_penjualan = date("Y-m-d H:i:s", $tanggal_penjualan);
+                        $bulan_sekarang = date("Y-m", $tanggal_penjualan);
+                        $bulan = $bulan_sekarang . '-01';
                         $nama_penjualan = "Penjualan Pada Hari " . tgl_indonesia($waktu_penjualan);
                         $cekdatapenjualan = $this->penjualanmodel->where('nama_penjualan', $nama_penjualan)->first();
                         $datapenjualan = [
@@ -830,6 +848,7 @@ class PenjualanController extends BaseController
                             'jumlah_barang' => $value[4],
                             'harga_beli_barang' => $value[5],
                             'harga_jual_barang' => $value[6],
+                            'bulan' => $bulan,
                             'created_at' => $waktu_penjualan
                         ];
                         if ($cekpenjualanorder == null) {
@@ -843,6 +862,8 @@ class PenjualanController extends BaseController
                         $tanggal_jam = $tanggal . $jam;
                         $tanggal_penjualan = strtotime($tanggal_jam);
                         $waktu_penjualan = date("Y-m-d H:i:s", $tanggal_penjualan);
+                        $bulan_sekarang = date("Y-m", $tanggal_penjualan);
+                        $bulan = $bulan_sekarang . '-01';
                         $nama_penjualan = "Penjualan Pada Hari " . tgl_indonesia($waktu_penjualan);
                         $cekdatapenjualan = $this->penjualanmodel->where('nama_penjualan', $nama_penjualan)->first();
                         $datapenjualan = [
@@ -873,6 +894,7 @@ class PenjualanController extends BaseController
                             'jumlah_barang' => $cleanpenjualan[4],
                             'harga_beli_barang' => $cleanpenjualan[5],
                             'harga_jual_barang' => $cleanpenjualan[6],
+                            'bulan' => $bulan,
                             'created_at' => $waktu_penjualan
                         ];
                         if ($cekpenjualanorder == null) {

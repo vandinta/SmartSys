@@ -3,7 +3,7 @@
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
-    <h4 class="page-title">Barang</h4>
+    <h4 class="page-title">Prakiraan</h4>
     <ul class="breadcrumbs">
       <li class="nav-home">
         <a href="<?php echo base_url('/') ?>">
@@ -14,7 +14,7 @@
         <i class="flaticon-right-arrow"></i>
       </li>
       <li class="nav-item">
-        <a href="<?php echo base_url('/databarang') ?>"><?= $title; ?></a>
+        <a href="<?php echo base_url('/dataprakiraan') ?>"><?= $title; ?></a>
       </li>
     </ul>
   </div>
@@ -25,16 +25,16 @@
           <div class="d-flex align-items-center">
             <h4 class="card-title"><?= $title; ?></h4>
             <div class="ml-auto">
-              <button type="button" class="btn btn-icon btn-round btn-info mr-1" data-toggle="modal" data-target="#importModal">
+              <!-- <button type="button" class="btn btn-icon btn-round btn-info mr-1" data-toggle="modal" data-target="#importModal">
                 <i class="fa fa-sign-in-alt"></i>
               </button>
               <button type="button" class="btn btn-icon btn-round btn-info" data-toggle="modal" data-target="#exportModal">
                 <i class="fa fa-sign-out-alt"></i>
-              </button>
+              </button> -->
             </div>
-            <a href="<?php echo base_url('/databarang/tambah') ?>" type="button" class="btn btn-primary btn-round ml-2" <?php if ($_SESSION['role'] == "superadmin") {
-                                                                                                                          echo "hidden";
-                                                                                                                        } ?>><i class="fa fa-plus"></i>Tambah Data</a>
+            <a href="<?php echo base_url('/dataprakiraan/tambah') ?>" type="button" class="btn btn-primary btn-round ml-2" <?php if ($_SESSION['role'] == "superadmin") {
+                                                                                                                              echo "hidden";
+                                                                                                                            } ?>><i class="fa fa-plus"></i> Tambah Data</a>
           </div>
         </div>
         <div class="card-body">
@@ -42,45 +42,26 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
-                  <!-- <th style="width: 20%">Image Barang</th> -->
+                  <th style="width: 10%; text-align:center;">No</th>
                   <th>Nama Barang</th>
-                  <th>Kategori</th>
-                  <th>Stok</th>
-                  <!-- <th>Harga Beli</th>
-                  <th>Harga Jual</th> -->
-                  <th style="width: 8%" <?php if ($_SESSION['role'] == "superadmin") {
-                                          echo "hidden";
-                                        } ?>>Aksi</th>
+                  <!-- <th>Prakiraan</th> -->
+                  <th style="width: 14%; text-align:center;">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
-                <?php foreach ($barang as $brg) : ?>
+                <?php foreach ($prakiraan as $pra) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
-                    <!-- <td><img src="<?php echo base_url("assets/image/barang/" . $brg["image_barang"]); ?>" style="width: 150px; height: 100px;"></td> -->
-                    <td><?= $brg["nama_barang"] ?></td>
-                    <td>
-                      <?= $brg["nama_kategori"];
-                      ?>
-                    </td>
-                    <td><?= $brg["stok_barang"] ?></td>
-                    <!-- <td><?= $brg["harga_beli"] ?></td>
-                    <td><?= $brg["harga_jual"] ?></td> -->
-                    <?php  ?>
-                    <td <?php if ($_SESSION['role'] == "superadmin") {
-                          echo "hidden";
-                        } ?>>
+                    <th scope="row" style="text-align:center;"><?= $no++ ?></th>
+                    <td><?= $pra["nama_barang"] ?></td>
+                    <!-- <td><?= $pra["nama_prakiraan"] ?></td> -->
+                    <td style="text-align:center;">
                       <div class="form-button-action">
-                        <a href="<?= base_url('/databarang/ubah/') . "/" . $brg["id_barang"] ?>">
+                        <a href="<?= base_url('/dataprakiraan/detail/') . "/" . $pra["id_prakiraan"] ?>">
                           <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
                             <i class="fa fa-eye"></i>
                           </button>
                         </a>
-                        <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $brg["id_barang"] ?>)" data-original-title="Hapus">
-                          <i class="fa fa-times"></i>
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -99,7 +80,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="exampleModalLabel">Import Data Barang</h4>
+        <h4 class="modal-title" id="exampleModalLabel">Import Data Penjualan</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -108,7 +89,7 @@
         <h5>Template Data</h5>
         <ul class="nav nav-pills nav-secondary nav-pills-no-bd nav-pills-icons justify-content-center" id="pills-tab-with-icon">
           <li class="nav-item">
-            <a class="" href="<?= base_url('assets/template/barang/Template-Data-Barang.csv') ?>">
+            <a class="" href="<?= base_url('assets/template/penjualan/Template-Data-Penjualan.csv') ?>">
               <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
                 <i class="fa fa-file-code"></i>
                 CSV
@@ -116,7 +97,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="" href="<?= base_url('assets/template/barang/Template-Data-Barang.xlsx') ?>">
+            <a class="" href="<?= base_url('assets/template/penjualan/Template-Data-Penjualan.xlsx') ?>">
               <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
                 <i class="fa fa-file-excel"></i>
                 EXCEL
@@ -141,7 +122,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Export Data Barang</h5>
+        <h4 class="modal-title" id="exampleModalLabel">Export Data Penjualan</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -149,7 +130,7 @@
       <div class="modal-body">
         <ul class="nav nav-pills nav-secondary nav-pills-no-bd nav-pills-icons justify-content-center" id="pills-tab-with-icon">
           <li class="nav-item">
-            <a class="" href="<?= base_url('/databarang/exportcsv') ?>">
+            <a class="" href="<?= base_url('/dataprakiraan/exportcsv') ?>">
               <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
                 <i class="fa fa-file-code"></i>
                 CSV
@@ -157,7 +138,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="" href="<?= base_url('/databarang/exportexcel') ?>">
+            <a class="" href="<?= base_url('/dataprakiraan/exportexcel') ?>">
               <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
                 <i class="fa fa-file-excel"></i>
                 EXCEL
@@ -165,7 +146,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="" href="<?= base_url('/databarang/exportpdf') ?>">
+            <a class="" href="<?= base_url('/dataprakiraan/exportpdf') ?>">
               <button type="button" class="btn btn-outline-primary" style="width: 90px; text-align: center;">
                 <i class="fa fa-file-pdf"></i>
                 PDF
@@ -184,12 +165,12 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="exampleModalLabel">Input File Data Barang</h4>
+        <h4 class="modal-title" id="exampleModalLabel">Input File Data Penjualan</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form action="<?php echo base_url('/databarang/import') ?>" method="post" enctype="multipart/form-data">
+      <form action="<?php echo base_url('/dataprakiraan/import') ?>" method="post" enctype="multipart/form-data">
         <?= csrf_field() ?>
         <div class="modal-body">
           <div class="form-group">
@@ -247,7 +228,7 @@
   function hapus(id) {
     Swal.fire({
       title: 'Peringatan!!!',
-      text: "apakah anda yakin ingin menghapus Data Barang ini?",
+      text: "apakah anda yakin ingin menghapus Data Penjualan ini?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -257,7 +238,7 @@
     }).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
-          url: '<?= base_url('/databarang') . "/" ?>' + id,
+          url: '<?= base_url('/dataprakiraan') . "/" ?>' + id,
           method: 'delete',
           success: function(response) {
             Swal.fire({
@@ -285,7 +266,7 @@
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>
-  
+
   <?php if (session()->getFlashdata('berhasil_import') != NULL) { ?>
     Swal.fire({
       icon: 'success',

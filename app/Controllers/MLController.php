@@ -189,8 +189,6 @@ class MLController extends BaseController
         $file = 'c:/xampp/htdocs/SmartSys/mlmodel.py';
         $command = escapeshellcmd("$py $file $filename $tgl_awal $tgl_akhir $lim_akurasi $id_barang");
         $hasil = shell_exec($command);
-        // var_dump($hasil);
-        // die;
         return $hasil;
     }
 }

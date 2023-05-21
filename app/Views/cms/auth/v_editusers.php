@@ -14,6 +14,12 @@
         <i class="flaticon-right-arrow"></i>
       </li>
       <li class="nav-item">
+        <a href="<?= base_url("/datausers")?>">Data Users</a>
+      </li>
+      <li class="separator">
+        <i class="flaticon-right-arrow"></i>
+      </li>
+      <li class="nav-item">
         <a href="<?= base_url("/ubahpassword") . "/" . $user['email'] ?>"><?= $title; ?></a>
       </li>
     </ul>

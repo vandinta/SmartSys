@@ -3,7 +3,7 @@
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
-    <h4 class="page-title">Kategori</h4>
+    <h4 class="page-title">Barang</h4>
     <ul class="breadcrumbs">
       <li class="nav-home">
         <a href="<?php echo base_url('/') ?>">
