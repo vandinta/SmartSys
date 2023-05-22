@@ -38,8 +38,13 @@ $routes->get("/", "AuthController::index");
 $routes->post("/login", "AuthController::login");
 $routes->get("/logout", "AuthController::logout");
 $routes->get("/viewgetemail", "AuthController::viewgetEmail");
+$routes->get("/lupakatasandi", "AuthController::lupakatasandi");
 $routes->post("/getemail", "AuthController::getEmail");
+$routes->post("/getemail_lupakatasandi", "AuthController::getEmailLupakatasandi");
 $routes->get("/aktivasi", "AuthController::aktivasiUser");
+$routes->get("/konfirmasilupakatasandi", "AuthController::konfLupakatasandi");
+$routes->get("/resetkatasandi", "AuthController::resetkatasandi");
+$routes->post("/reset/(:num)", "AuthController::resetSandi/$1");
 
 $routes->group('/datakategori', static function ($routes) {
     $routes->get("", "KategoriController::index");
@@ -110,8 +115,6 @@ $routes->group('/dataprakiraan', static function ($routes) {
     $routes->post("edit/(:num)", "PrakiraanController::ganti/$1");
     $routes->delete("(:num)", "PrakiraanController::delete/$1");
 });
-
-$routes->get("/history", "AuthController::index");
 
 $routes->get("/ubahpassword/(:segment)", "AuthController::ubah/$1");
 $routes->get("/setting/(:segment)", "AuthController::edit/$1");

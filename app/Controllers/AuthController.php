@@ -368,7 +368,7 @@ class AuthController extends BaseController
 
                 $email = \Config\Services::email();
                 $email->setTo($dataemail);
-                $email->setFrom('smartsysindo@gmail.com', 'Konfirmasi Pendaftaran');
+                $email->setFrom('smartsysindo@gmail.com', 'Link Aktivasi Akun');
 
                 $email->setSubject("Link Aktivasi Akun");
                 $email->setMessage($message);
@@ -397,7 +397,7 @@ class AuthController extends BaseController
             ], $decoded->email);
             return redirect()->to("/");
         } catch (\Firebase\JWT\ExpiredException $e) {
-            $this->session->setFlashdata('gagal_tambah', 'Token aktivasi kadaluarsa');
+            $this->session->setFlashdata('error', 'Token aktivasi kadaluarsa');
             return redirect()->to("/viewgetemail");
         }
     }
@@ -410,6 +410,16 @@ class AuthController extends BaseController
         ];
 
         return view("pages/v_getemail", $data);
+    }
+
+    public function lupakatasandi()
+    {
+        $data = [
+            "title" => "Lupa Kata Sandi",
+            "validation" => \Config\Services::validation(),
+        ];
+
+        return view("pages/v_getemail_lupakatasandi", $data);
     }
 
     public function getEmail()
@@ -454,7 +464,7 @@ class AuthController extends BaseController
 
                     $email = \Config\Services::email();
                     $email->setTo($dataemail);
-                    $email->setFrom('smartsysindo@gmail.com', 'Konfirmasi Pendaftaran');
+                    $email->setFrom('smartsysindo@gmail.com', 'Link Aktivasi Akun');
 
                     $email->setSubject("Link Aktivasi Akun");
                     $email->setMessage($message);
@@ -470,6 +480,149 @@ class AuthController extends BaseController
         } else {
             $this->session->setFlashdata('error', 'Email gagal dikirimkan');
             return redirect()->to("/viewgetemail");
+        }
+    }
+
+    public function getEmailLupakatasandi()
+    {
+        $rules = [
+            'email' => 'required|min_length[6]|max_length[255]|valid_email',
+        ];
+
+        $messages = [
+            "email" => [
+                "required" => "{field} tidak boleh kosong",
+                "min_length" => "{field} minimal 6 karakter",
+                "max_length" => "{field} maksimal 255 karakter",
+                "valid_email" => "{field} harus berupa email",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $dataemail = $this->request->getVar("email");
+            $cekdata = $this->usersmodel->where('email', $dataemail)->first();
+
+            if ($cekdata != null) {
+                $payload = array(
+                    "iat" => 1356999524,
+                    "nbf" => 1357000000,
+                    "exp" => time() + (60 * 15),
+                    "email" => $dataemail
+                );
+                $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
+
+                $link = base_url() . "/konfirmasilupakatasandi?token=" . $token;
+                $linkaduan = base_url() . "/lupakatasandi";
+                $datatemplate = [
+                    "email" => $dataemail,
+                    "link" => $link,
+                    "linkaduan" => $linkaduan,
+                    "logo" => base_url("Atlantis/assets/img/logo.svg")
+                ];
+
+                $message = view('template/email_konflupakatasandi.html', $datatemplate);
+
+                $email = \Config\Services::email();
+                $email->setTo($dataemail);
+                $email->setFrom('smartsysindo@gmail.com', 'Link Konfirmasi Lupa Kata Sandi');
+
+                $email->setSubject("Link Konfirmasi Lupa Kata Sandi");
+                $email->setMessage($message);
+                $email->send();
+                session()->setFlashdata("berhasil", "Email lupa kata sandi berhasil dikirimkan");
+                return redirect()->to("/");
+            }
+            $this->session->setFlashdata('error', 'Email tidak ditemukan');
+            return redirect()->to("/lupakatasandi");
+        } else {
+            $this->session->setFlashdata('error', 'Email gagal dikirimkan');
+            return redirect()->to("/lupakatasandi");
+        }
+    }
+
+    public function konfLupakatasandi()
+    {
+        $token = $this->request->getVar('token');
+
+        
+        try {
+            $decoded = JWT::decode($token, 'JWT_SECRET', ['HS256']);
+
+            $datauser = $this->usersmodel->where('email', $decoded->email)->first();
+            return redirect()->to("/resetkatasandi?data=" . $datauser['user_id']);
+        } catch (\Firebase\JWT\ExpiredException $e) {
+            $this->session->setFlashdata('error', 'Token aktivasi kadaluarsa');
+            return redirect()->to("/lupakatasandi");
+        }
+    }
+
+    public function resetkatasandi()
+    {
+        $id = $this->request->getVar("data");
+        
+        $data = [
+            "title" => "Ubah Password",
+            "user" => $this->usersmodel->where('user_id', $id)->first(),
+        ];
+
+        return view("pages/v_ubahkatasandi", $data);
+    }
+
+    public function resetSandi($id)
+    {        
+        $rules = [
+            'passwordbaru' => 'required|min_length[8]|alpha_numeric',
+            'konfirmasipassword' => 'required|matches[passwordbaru]'
+        ];
+
+        $messages = [
+            "passwordbaru" => [
+                "required" => "Kata Sandi Baru Tidak Boleh Kosong",
+                "min_length" => "Kata Sandi Baru Minimal 8 Karakter",
+                "alpha_numeric" => "Kata Sandi Baru Harus Berisi Gabungan Huruf & Angka",
+            ],
+            "konfirmasipassword" => [
+                "required" => "Konfirmasi Kata Sandi Tidak Boleh Kosong",
+                "matches" => "Konfirmasi Kata Sandi Tidak Sama Dengan Kata Sandi",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $password = md5($this->request->getVar("passwordbaru"));
+
+            $datauser = $this->usersmodel->where('user_id', $id)->first();
+
+            $data = [
+                "user_id" => $id,
+                "password" => $password,
+            ];
+
+            if ($this->usersmodel->save($data)) {
+                $link = base_url();
+
+                $datatemplate = [
+                    "email" => $datauser['email'],
+                    "link" => $link,
+                    "logo" => base_url("Atlantis/assets/img/logo.svg")
+                ];
+
+                $message = view('template/lupakatasandi.html', $datatemplate);
+
+                $email = \Config\Services::email();
+                $email->setTo($datauser['email']);
+                $email->setFrom('smartsysindo@gmail.com', 'Konfirmasi Ubah Kata Sandi');
+
+                $email->setSubject("Konfirmasi Ubah Kata Sandi");
+                $email->setMessage($message);
+                $email->send();
+                session()->setFlashdata("berhasil", "Kata Sandi Berhasil Diubah");
+                return redirect()->to("/");
+            }
+            $this->session->setFlashdata('error', 'Data anda tidak valid');
+            return redirect()->to("/resetkatasandi?data=" . $id);
+        } else {
+            $this->session->setFlashdata('error', 'Data anda tidak valid');
+            return redirect()->to("/resetkatasandi?data=" . $id);
         }
     }
 

@@ -28,7 +28,12 @@
     <div class="col-md-12">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Grafik Data <?= $dataprakiraan['nama_barang']; ?></div>
+          <div class="d-flex align-items-center">
+            <div class="card-title">Grafik Data <?= $dataprakiraan['nama_barang']; ?></div>
+            <div class="ml-auto">
+            </div>
+            <a href="<?php echo base_url('/datapenjualan/update') ?>" type="button" class="btn btn-primary btn-round ml-2"><i class="fa flaticon-repeat"></i>  Perbarui Prakiraan</a>
+          </div>
         </div>
         <div class="card-body">
           <div class="chart-container">
@@ -63,25 +68,25 @@
                   <td style="text-align:center; font-size: 16px;"><?= bulan_indonesia($dp["bulan"]); ?></td>
                   <td style="text-align:center; font-size: 16px;"><?= $dp["hasil_prakiraan"]; ?></td>
                   <td style="text-align:center; font-size: 16px;">
-                    <?php 
-                      if ($dp['status'] == 'aman') {
-                        echo '<span class="badge badge-success" style="text-align:center; font-size: 12px;">Aman</span>';
-                      } elseif ($dp['status'] == 'cukup') {
-                        echo '<span class="badge badge-warning" style="text-align:center; font-size: 12px;">Cukup</span>';
-                      } else {
-                        echo '<span class="badge badge-danger" style="text-align:center; font-size: 12px;">Kurang</span>';
-                      }
+                    <?php
+                    if ($dp['status'] == 'aman') {
+                      echo '<span class="badge badge-success" style="text-align:center; font-size: 12px;">Aman</span>';
+                    } elseif ($dp['status'] == 'cukup') {
+                      echo '<span class="badge badge-warning" style="text-align:center; font-size: 12px;">Cukup</span>';
+                    } else {
+                      echo '<span class="badge badge-danger" style="text-align:center; font-size: 12px;">Kurang</span>';
+                    }
                     ?>
                   </td>
                   <td style="text-align:center;">
-                    <?php 
-                      if ($dp['selisih'] < 0) {
-                        echo 'Stok Barang Ini Pada Bulan Ini Tidak Mencukupi, Atau Kurang Sebanyak ' . abs($dp['selisih']) . ' Items';
-                      } elseif ($dp['selisih'] == 0) {
-                        echo 'Stok Barang Ini Pada Bulan Ini Tidak Memiliki Sisi';
-                      } else {
-                        echo 'Stok Barang Ini Pada Bulan Ini Memiliki Sisa Sebanyak ' . abs($dp['selisih']) . ' Items';
-                      }
+                    <?php
+                    if ($dp['selisih'] < 0) {
+                      echo 'Stok Barang Ini Pada Bulan Ini Tidak Mencukupi, Atau Kurang Sebanyak ' . abs($dp['selisih']) . ' Items';
+                    } elseif ($dp['selisih'] == 0) {
+                      echo 'Stok Barang Ini Pada Bulan Ini Tidak Memiliki Sisi';
+                    } else {
+                      echo 'Stok Barang Ini Pada Bulan Ini Memiliki Sisa Sebanyak ' . abs($dp['selisih']) . ' Items';
+                    }
                     ?>
                   </td>
                 </tr>

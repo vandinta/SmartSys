@@ -37,11 +37,15 @@
                 <?= csrf_field() ?>
                 <div class="form-group">
                   <label for="id_barang">Nama Barang</label>
-                  <select class="form-control" id="id_barang" name="id_barang" value="<?= old("id_barang") ?>">
+                  <select class="form-control <?= validation_show_error("id_barang") ? 'is-invalid' : ""; ?>" style="margin: 10px; width: 100%;" id="id_barang" name="id_barang" onchange="Hitung(this);" autofocus>
+                    <option value=""></option>
                     <?php foreach ($barang as $brg) : ?>
                       <option value="<?= $brg['id_barang'] ?>"><?= $brg['nama_barang'] ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <div class="invalid-feedback">
+                    <?= validation_show_error("id_barang") ?>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="lim_akurasi">Limit Nilai Akurasi</label>
@@ -71,6 +75,10 @@
 
 <?= $this->section("content_js") ?>
 <script>
+  $("#id_barang").select2({
+    placeholder: "Pilih Nama Barang"
+  });
+
   function simpan() {
     Swal.fire({
       title: 'Sedang Diproses!',

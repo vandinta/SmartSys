@@ -42,6 +42,10 @@ class PrakiraanController extends BaseController
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
         }
+        
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
 
         $nilai = [
             "menu" => "prakiraan",
@@ -51,6 +55,60 @@ class PrakiraanController extends BaseController
         ];
 
         return view("cms/prakiraan/v_prakiraan", $nilai);
+    }
+
+    public function create()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
+        $data = [
+            "menu" => "prakiraan",
+            "submenu" => " ",
+            "title" => "Tambah Prakiraan",
+            "barang" => $this->barangmodel->findAll()
+        ];
+
+        return view("cms/prakiraan/v_tambahdata", $data);
+    }
+
+    public function model()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
+        $rules = [
+            'id_barang' => 'required',
+            'lim_akurasi' => 'required|numeric',
+        ];
+
+        $messages = [
+            "id_barang" => [
+                "required" => "Nama Barang tidak boleh kosong",
+            ],
+            "lim_akurasi" => [
+                "required" => "Limit Nilai Akurasi Tidak Boleh Kosong",
+                "numeric" => "Limit Nilai Akurasi harus berisi angka",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $id_barang = $this->request->getVar("id_barang");
+            
+        } else {
+            $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
+            return redirect()->to("/dataprakiraan/tambah");
+        }
     }
 
     public function detail($id)
@@ -85,7 +143,7 @@ class PrakiraanController extends BaseController
             if ($nilai_perhitungan <= 0) {
                 $nilai[$b]['status'] = 'kurang';
                 $nilai[$b]['selisih'] = $nilai_perhitungan;
-            } elseif($nilai_perhitungan >= 15 && $nilai_perhitungan <= 45) {
+            } elseif ($nilai_perhitungan >= 15 && $nilai_perhitungan <= 45) {
                 $nilai[$b]['status'] = 'cukup';
                 $nilai[$b]['selisih'] = $nilai_perhitungan;
             } else {
