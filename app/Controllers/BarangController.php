@@ -333,6 +333,10 @@ class BarangController extends BaseController
             return redirect()->to("/");
         }
 
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
         $cek = $this->barangmodel->where('id_barang', $id)->first();
 
         if ($this->barangmodel->delete($id)) {

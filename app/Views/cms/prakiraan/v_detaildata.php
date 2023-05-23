@@ -100,7 +100,7 @@
     $bulan = "";
     $prakiraan = null;
     foreach ($grafik as $gf) {
-      $tgl = $gf['bulan'];
+      $tgl = bulan_indonesia($gf['bulan']);
       $bulan .= "'$tgl'" . ", ";
       $jum = $gf['hasil_prakiraan'];
       $prakiraan .= "$jum" . ", ";

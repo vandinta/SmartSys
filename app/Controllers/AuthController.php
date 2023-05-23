@@ -52,6 +52,10 @@ class AuthController extends BaseController
             "validation" => \Config\Services::validation(),
         ];
 
+        if (!get_cookie("access_token")) {
+            return view("pages/v_login", $data);
+        }
+
         $t = now('Asia/Jakarta');
         $time = date("Y-m-d", $t);
         $bulan = date("Y-m", $t);
@@ -113,8 +117,6 @@ class AuthController extends BaseController
 
         if (get_cookie("access_token")) {
             return view("cms/v_dashboard", $nilai);
-        } else {
-            return view("pages/v_login", $data);
         }
     }
 
@@ -544,7 +546,6 @@ class AuthController extends BaseController
     {
         $token = $this->request->getVar('token');
 
-        
         try {
             $decoded = JWT::decode($token, 'JWT_SECRET', ['HS256']);
 

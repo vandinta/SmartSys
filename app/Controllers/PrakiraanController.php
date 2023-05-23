@@ -140,10 +140,10 @@ class PrakiraanController extends BaseController
         $nilai_perhitungan = $barang['stok_barang'];
         for ($b = 0; $b < count($data_bulan); $b++) {
             $nilai_perhitungan -= $data_bulan[$b]['hasil_prakiraan'];
-            if ($nilai_perhitungan <= 0) {
+            if ($nilai_perhitungan < 0) {
                 $nilai[$b]['status'] = 'kurang';
                 $nilai[$b]['selisih'] = $nilai_perhitungan;
-            } elseif ($nilai_perhitungan >= 15 && $nilai_perhitungan <= 45) {
+            } elseif ($nilai_perhitungan >= 0 && $nilai_perhitungan <= 30) {
                 $nilai[$b]['status'] = 'cukup';
                 $nilai[$b]['selisih'] = $nilai_perhitungan;
             } else {

@@ -25,6 +25,10 @@ class MLController extends BaseController
             return redirect()->to("/");
         }
 
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
         $token = get_cookie("access_token");
         $this->decoded = JWT::decode($token, 'JWT_SECRET', ['HS256']);
 
@@ -38,6 +42,10 @@ class MLController extends BaseController
     public function index()
     {
         if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
             return redirect()->to("/");
         }
 

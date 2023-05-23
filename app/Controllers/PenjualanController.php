@@ -491,6 +491,14 @@ class PenjualanController extends BaseController
 
     public function delete_order($id = null)
     {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+        
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+        
         $cek = $this->ordermodel->where('id_order', $id)->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->first();
 
         $t = now('Asia/Jakarta');
@@ -531,6 +539,14 @@ class PenjualanController extends BaseController
 
     public function delete($id = null)
     {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
         $cek = $this->penjualanmodel->where('id_penjualan', $id)->first();
 
         if ($this->penjualanmodel->delete($id)) {
