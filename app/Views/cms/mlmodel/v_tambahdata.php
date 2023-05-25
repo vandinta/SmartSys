@@ -55,6 +55,7 @@
                   </div>
                 </div>
                 <div class="form-group">
+                  <h6>*Pastikan data penjualan anda lebih dari 24 bulan atau 2 tahun</h6>
                   <h6>*Semakin besar batas nilai akurasi yang diinginkan maka semakin lama waktu tunggu</h6>
                   <h6>*Rekomendasi batas nilai akurasi asalah 55 - 80</h6>
                 </div>
@@ -94,6 +95,13 @@
     Swal.fire({
       icon: 'error',
       title: 'Data Gagal Ditambahkan!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+  <?php if (session()->getFlashdata('gagal_proses') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Data Anda Tidak Mencukupi!',
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>
