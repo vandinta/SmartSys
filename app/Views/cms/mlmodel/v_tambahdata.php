@@ -3,7 +3,7 @@
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
-    <h4 class="page-title">Model</h4>
+    <h4 class="page-title">Model Perhitungan</h4>
     <ul class="breadcrumbs">
       <li class="nav-home">
         <a href="<?php echo base_url('/') ?>">
@@ -14,7 +14,7 @@
         <i class="flaticon-right-arrow"></i>
       </li>
       <li class="nav-item">
-        <a href="<?php echo base_url('/datamodel') ?>">Data Model</a>
+        <a href="<?php echo base_url('/datamodel') ?>">Data Model Perhitungan</a>
       </li>
       <li class="separator">
         <i class="flaticon-right-arrow"></i>

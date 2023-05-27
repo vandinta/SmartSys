@@ -112,8 +112,7 @@ $routes->group('/dataprakiraan', static function ($routes) {
     $routes->get("tambah", "PrakiraanController::create");
     $routes->get("detail/(:num)", "PrakiraanController::detail/$1");
     $routes->post("input", "PrakiraanController::model");
-    $routes->post("edit/(:num)", "PrakiraanController::ganti/$1");
-    $routes->delete("(:num)", "PrakiraanController::delete/$1");
+    $routes->match(['get', 'post'], "update/(:num)", "PrakiraanController::updatePrediksi/$1");
 });
 
 $routes->get("/ubahpassword/(:segment)", "AuthController::ubah/$1");

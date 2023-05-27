@@ -3,7 +3,7 @@
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
-    <h4 class="page-title">Prakiraan</h4>
+    <h4 class="page-title">Prediksi Penjualan</h4>
     <ul class="breadcrumbs">
       <li class="nav-home">
         <a href="<?php echo base_url('/') ?>">
@@ -14,7 +14,7 @@
         <i class="flaticon-right-arrow"></i>
       </li>
       <li class="nav-item">
-        <a href="<?php echo base_url('/dataprakiraan') ?>">Data Prakiraan</a>
+        <a href="<?php echo base_url('/dataprakiraan') ?>">Data Prediksi Penjualan</a>
       </li>
       <li class="separator">
         <i class="flaticon-right-arrow"></i>
@@ -83,6 +83,20 @@
     Swal.fire({
       icon: 'error',
       title: 'Data Gagal Ditambahkan!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+  <?php if (session()->getFlashdata('gagal_proses') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Data Tidak Mencukupi!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+  <?php if (session()->getFlashdata('gagal_diproses') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Data Barang Tidak Memiliki Model Prediksi!',
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>

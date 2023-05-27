@@ -30,7 +30,7 @@ import sys
 
 def main():
   namafile = sys.argv[1]
-  df = pd.read_csv('c:/xampp/htdocs/SmartSys/public/machine/' + namafile + '.csv', index_col='tanggal',parse_dates=True)
+  df = pd.read_csv('c:/xampp/htdocs/SmartSys/public/dataset/' + namafile + '.csv', index_col='tanggal',parse_dates=True)
   df.index.freq='MS'
   
   percent = 80

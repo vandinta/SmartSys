@@ -61,7 +61,7 @@
                                                                         } ?>>
           <a href="<?= base_url("/datamodel") ?>">
             <i class="fas fa-suitcase"></i>
-            <p>Data Model</p>
+            <p>Model Perhitungan</p>
           </a>
         </li>
         <li class="nav-item <?= $menu == 'prakiraan' ? 'active' : '' ?>" <?php if ($_SESSION['role'] != "admin") {
@@ -69,7 +69,7 @@
                                                                         } ?>>
           <a href="<?= base_url("/dataprakiraan") ?>">
             <i class="fas fa-chart-line"></i>
-            <p>Prakiraan</p>
+            <p>Prediksi Penjualan</p>
           </a>
         </li>
         <li class="nav-item <?= $menu == 'datausers' ? 'active' : '' ?>" <?php if ($_SESSION['role'] != "superadmin") {

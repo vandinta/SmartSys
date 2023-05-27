@@ -30,68 +30,92 @@ import sys
 
 # MAIN PROGRAM
 def main():
-  df = pd.read_csv('dataset_produksi_susu_test.csv', index_col='Tanggal',parse_dates=True)
+  df = pd.read_csv('c:/xampp/htdocs/SmartSys/public/dataset/' + sys.argv[1] + '.csv', index_col='tanggal',parse_dates=True)
   df.index.freq='MS'
   
-  cek_awal = df.iloc[:12]
-  cek = df.iloc[12:]
-  
-  # print(len(cek_awal[-12:]))
-  # print(cek_awal[-12:])
-  # print(cek)
+  dataset_12 = df.iloc[:12]
+  dataset_prediksi = df.iloc[:]
   
   scaler = MinMaxScaler()
-  
-  scaler.fit(cek_awal)
-  scaled_cek_awal = scaler.transform(cek_awal)
-  scaled_cek = scaler.transform(cek)
+  scaler.fit(dataset_12)
+  scaled_dataset_12 = scaler.transform(dataset_12)
+  scaled_dataset_prediksi = scaler.transform(dataset_prediksi)
   
   n_input = 12
   n_features = 1
   
-  json_file = open('model_test.json', 'r')
+  json_file = open('c:/xampp/htdocs/SmartSys/public/model/' + sys.argv[2] + '.json', 'r')
   model_json = json_file.read()
   json_file.close()
   model = model_from_json(model_json)
-  # load weights into new model
-  model.load_weights("model_test.h5")
+  model.load_weights('c:/xampp/htdocs/SmartSys/public/model/' + sys.argv[2] + '.h5')
   
   model.compile(optimizer='adam', loss='mse')
   
-  cek_pembuatans = []
+  dataset_prediksi_pembelian = []
 
-  first_eval_batch = scaled_cek_awal[-n_input:]
-  
-  # print(first_eval_batch)
-  # print(cek_awal[-n_input:])
+  first_eval_batch = scaled_dataset_12[-n_input:]
   
   current_batch = first_eval_batch.reshape((1, n_input, n_features))
-  # print(current_batch)
 
-  for i in range(len(cek)):
+  for i in range(len(dataset_prediksi)):
       
       # get the prediction value for the first batch
       current_pred = model.predict(current_batch)[0]
       
       # append the prediction into the array
-      cek_pembuatans.append(current_pred) 
+      dataset_prediksi_pembelian.append(current_pred) 
       
       # use the prediction to update the batch and remove the first value
       current_batch = np.append(current_batch[:,1:,:],[[current_pred]],axis=1)
   
-  # print(cek.head(),val.tail())
+  true_dataset_prediksi_pembelian = scaler.inverse_transform(dataset_prediksi_pembelian)
   
-  true_cek_pembuatans = scaler.inverse_transform(cek_pembuatans)
+  dataset_prediksi['prediksi'] = np.around(true_dataset_prediksi_pembelian)
   
-  cek['Pembuatans'] = true_cek_pembuatans
+  jumlah = len(dataset_prediksi) - 9
+  datafix = dataset_prediksi[jumlah:]
+  datafix = datafix.reset_index()
+  print(datafix)
   
-  print(len(true_cek_pembuatans))
-  print(true_cek_pembuatans)
+  mydb = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="",
+    database="db_smartsys"
+  )
   
-  # RMSE
-  rmse_cek = np.sqrt(mean_squared_error(cek['Pembuatan'],cek['Pembuatans']))
-  print('Root mean square (RMSE) : ' + str(rmse_cek))
+  id = sys.argv[3]
+  namaprediksi = sys.argv[4]
   
+  print(id)
+  print(namaprediksi)
+  
+  sql_cek = "SELECT * FROM tb_prakiraan WHERE id_barang = %s"
+  cursor = mydb.cursor()
+  cursor.execute(sql_cek, (id,))
+  nilaidb = cursor.fetchall()
+  
+  if nilaidb == []:
+    sql_insert = "INSERT INTO tb_prakiraan (id_barang, nama_prakiraan) VALUES (%s, %s)"
+    record_insert = (id, namaprediksi)
+    cursor = mydb.cursor()
+    cursor.execute(sql_insert, record_insert)
+    mydb.commit()
+    
+  sql_cek_prakiraan = "SELECT * FROM tb_prakiraan WHERE id_barang = %s"
+  cursor = mydb.cursor()
+  cursor.execute(sql_cek_prakiraan, (id,))
+  nilaiidpra = cursor.fetchall()
+  
+  idprakiraan = nilaiidpra[0][0]
+  
+  for index,row in datafix.iterrows():
+    sql_insert = "INSERT INTO tb_hasil_prakiraan (id_prakiraan, bulan, hasil_prakiraan) VALUES (%s, %s, %s)"
+    record_insert = (idprakiraan, row['tanggal'], int(row['prediksi']))
+    cursor = mydb.cursor()
+    cursor.execute(sql_insert, record_insert)
+    mydb.commit()
 
 if __name__ == '__main__':
   main()

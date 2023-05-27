@@ -48,7 +48,7 @@ class MLController extends BaseController
     $nilai = [
       "menu" => "datamodel",
       "submenu" => " ",
-      "title" => "Data Model",
+      "title" => "Data Model Perhitungan",
       "model" => $this->mlmodel->orderBy('tb_model.created_at', 'DESC')->findAll(),
       "barang" => $this->barangmodel->findAll()
     ];
@@ -69,7 +69,7 @@ class MLController extends BaseController
     $data = [
       "menu" => "datamodel",
       "submenu" => " ",
-      "title" => "Tambah Model",
+      "title" => "Tambah Model Perhitungan",
       "barang" => $this->barangmodel->findAll()
     ];
 
@@ -126,7 +126,7 @@ class MLController extends BaseController
 
       $this->exportCsv($penjualan, $filename);
 
-      if (file_exists('machine/' . $filename . '.csv')) {
+      if (file_exists('dataset/' . $filename . '.csv')) {
         $this->createmodel($filename, $lim_akurasi, $id_barang);
       } else {
         $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
@@ -185,7 +185,7 @@ class MLController extends BaseController
     // $writer->save('php://output');
     // $file = readfile('data_' . $filename . '.csv');
 
-    $writer->save("machine/" . $filename);
+    $writer->save("dataset/" . $filename);
 
     // exit();
   }

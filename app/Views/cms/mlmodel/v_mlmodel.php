@@ -3,7 +3,7 @@
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
-    <h4 class="page-title">Model</h4>
+    <h4 class="page-title">Model Perhitungan</h4>
     <ul class="breadcrumbs">
       <li class="nav-home">
         <a href="<?php echo base_url('/') ?>">
@@ -34,7 +34,7 @@
             </div>
             <a href="<?php echo base_url('/datamodel/tambah') ?>" type="button" class="btn btn-primary btn-round ml-2" <?php if ($_SESSION['role'] == "superadmin") {
                                                                                                                           echo "hidden";
-                                                                                                                        } ?>><i class="fa fa-plus"></i> Buat Model</a>
+                                                                                                                        } ?>><i class="fa fa-plus"></i> Buat Model Perhitungan</a>
           </div>
         </div>
         <div class="card-body">
@@ -44,8 +44,8 @@
                 <tr>
                   <th style="width: 9%">No</th>
                   <!-- <th style="width: 20%">Image Barang</th> -->
-                  <th>Nama Model</th>
-                  <th>Nilai Akurasi</th>
+                  <th>Nama Model Perhitungan</th>
+                  <th>Nilai Akurasi Model</th>
                   <!-- <th>Harga Beli</th>
                   <th>Harga Jual</th> -->
                   <!-- <th style="width: 8%" <?php if ($_SESSION['role'] == "superadmin") {
