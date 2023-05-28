@@ -1,5 +1,9 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+<title>Barang - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
@@ -42,47 +46,40 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
-                  <!-- <th style="width: 20%">Image Barang</th> -->
-                  <th>Nama Barang</th>
-                  <th>Kategori</th>
-                  <th>Stok</th>
-                  <!-- <th>Harga Beli</th>
-                  <th>Harga Jual</th> -->
-                  <th style="width: 8%" <?php if ($_SESSION['role'] == "superadmin") {
-                                          echo "hidden";
-                                        } ?>>Aksi</th>
+                  <th style="width: 9%; text-align: center;">No</th>
+                  <th style="width: auto; text-align: center;">Nama Barang</th>
+                  <th style="width: auto; max-width:85px; text-align: center;">Kategori</th>
+                  <th style="width: auto; max-width:50px; text-align: center;">Stok</th>
+                  <?php if ($_SESSION['role'] != "superadmin") { ?>
+                    <th style="width: 17%; text-align: center;">Aksi</th>
+                  <?php } ?>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
                 <?php foreach ($barang as $brg) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
-                    <!-- <td><img src="<?php echo base_url("assets/image/barang/" . $brg["image_barang"]); ?>" style="width: 150px; height: 100px;"></td> -->
-                    <td><?= $brg["nama_barang"] ?></td>
-                    <td>
+                    <th scope="row" style="text-align: center;"><?= $no++ ?></th>
+                    <td style="text-align: center;"><?= $brg["nama_barang"] ?></td>
+                    <td style="text-align: center;">
                       <?= $brg["nama_kategori"];
                       ?>
                     </td>
-                    <td><?= $brg["stok_barang"] ?></td>
-                    <!-- <td><?= $brg["harga_beli"] ?></td>
-                    <td><?= $brg["harga_jual"] ?></td> -->
-                    <?php  ?>
-                    <td <?php if ($_SESSION['role'] == "superadmin") {
-                          echo "hidden";
-                        } ?>>
-                      <div class="form-button-action">
-                        <a href="<?= base_url('/databarang/ubah/') . "/" . $brg["id_barang"] ?>">
-                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
-                            <i class="fa fa-eye"></i>
+                    <td style="text-align: center;"><?= $brg["stok_barang"] ?></td>
+                    <?php if ($_SESSION['role'] != "superadmin") { ?>
+                      <td style="text-align: center;">
+                        <div class="form-button-action">
+                          <a href="<?= base_url('/databarang/ubah/') . "/" . $brg["id_barang"] ?>">
+                            <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
+                              <i class="fa fa-eye"></i>
+                            </button>
+                          </a>
+                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $brg["id_barang"] ?>)" data-original-title="Hapus">
+                            <i class="fa fa-times"></i>
                           </button>
-                        </a>
-                        <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $brg["id_barang"] ?>)" data-original-title="Hapus">
-                          <i class="fa fa-times"></i>
-                        </button>
-                      </div>
-                    </td>
+                        </div>
+                      </td>
+                    <?php } ?>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
@@ -285,7 +282,7 @@
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>
-  
+
   <?php if (session()->getFlashdata('berhasil_import') != NULL) { ?>
     Swal.fire({
       icon: 'success',

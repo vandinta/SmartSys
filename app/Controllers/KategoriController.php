@@ -170,6 +170,10 @@ class KategoriController extends BaseController
             return redirect()->to("/");
         }
 
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
         $cek = $this->kategorimodel->where('id_kategori', $id)->first();
 
         if ($this->kategorimodel->delete($id)) {

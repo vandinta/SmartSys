@@ -1,9 +1,13 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+	<title>Model Perhitungan - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
-    <h4 class="page-title">Model</h4>
+    <h4 class="page-title">Model Perhitungan</h4>
     <ul class="breadcrumbs">
       <li class="nav-home">
         <a href="<?php echo base_url('/') ?>">
@@ -14,7 +18,7 @@
         <i class="flaticon-right-arrow"></i>
       </li>
       <li class="nav-item">
-        <a href="<?php echo base_url('/datamodel') ?>">Data Model</a>
+        <a href="<?php echo base_url('/datamodel') ?>">Data Model Perhitungan</a>
       </li>
       <li class="separator">
         <i class="flaticon-right-arrow"></i>
@@ -37,11 +41,15 @@
                 <?= csrf_field() ?>
                 <div class="form-group">
                   <label for="id_barang">Nama Barang</label>
-                  <select class="form-control" id="id_barang" name="id_barang" value="<?= old("id_barang") ?>">
+                  <select class="form-control <?= validation_show_error("id_barang") ? 'is-invalid' : ""; ?>" style="margin: 10px; width: 100%;" id="id_barang" name="id_barang" onchange="Hitung(this);" autofocus>
+                    <option value=""></option>
                     <?php foreach ($barang as $brg) : ?>
                       <option value="<?= $brg['id_barang'] ?>"><?= $brg['nama_barang'] ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <div class="invalid-feedback">
+                    <?= validation_show_error("id_barang") ?>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="lim_akurasi">Limit Nilai Akurasi</label>
@@ -51,8 +59,9 @@
                   </div>
                 </div>
                 <div class="form-group">
+                  <h6>*Pastikan data penjualan anda lebih dari 24 bulan atau 2 tahun</h6>
                   <h6>*Semakin besar batas nilai akurasi yang diinginkan maka semakin lama waktu tunggu</h6>
-                  <h6>*Rekomendasi batas nilai akurasi asalah 55 - 80</h6>
+                  <h6>*Rekomendasi batas nilai akurasi adalah 55 - 80</h6>
                 </div>
                 <br>
                 <div class="card-action">
@@ -71,6 +80,10 @@
 
 <?= $this->section("content_js") ?>
 <script>
+  $("#id_barang").select2({
+    placeholder: "Pilih Nama Barang"
+  });
+
   function simpan() {
     Swal.fire({
       title: 'Sedang Diproses!',
@@ -86,6 +99,13 @@
     Swal.fire({
       icon: 'error',
       title: 'Data Gagal Ditambahkan!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+  <?php if (session()->getFlashdata('gagal_proses') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Data Anda Tidak Mencukupi!',
       confirmButtonColor: '#1572E8',
     });
   <?php } ?>

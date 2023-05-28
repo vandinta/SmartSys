@@ -1,5 +1,9 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+<title>Kategori - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
@@ -42,34 +46,37 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
-                  <th>Kategori</th>
-                  <th style="width: 17%" <?php if ($_SESSION['role'] == "superadmin") {
-                                            echo "hidden";
-                                          } ?>>Aksi</th>
+                  <th style="width: <?php if ($_SESSION['role'] != "superadmin") {
+                                      echo "14%";
+                                    } else {
+                                      echo "23%";
+                                    } ?>; text-align: center;">No</th>
+                  <th style="text-align: center;">Kategori</th>
+                  <?php if ($_SESSION['role'] != "superadmin") { ?>
+                    <th style="width: 20%; text-align: center;">Aksi</th>
+                  <?php } ?>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
                 <?php foreach ($kategori as $ktg) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
-                    <td><?= $ktg["nama_kategori"] ?></td>
-                    <?php  ?>
-                    <td <?php if ($_SESSION['role'] == "superadmin") {
-                          echo "hidden";
-                        } ?>>
-                      <div class="form-button-action">
-                        <a href="<?php echo base_url('/datakategori/ubah/') . "/" . $ktg["id_kategori"] ?>">
-                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-primary" data-original-title="Ubah">
-                            <i class="fa fa-edit"></i>
+                    <th scope="row" style="text-align: center;"><?= $no++ ?></th>
+                    <td style="text-align: center;"><?= $ktg["nama_kategori"] ?></td>
+                    <?php if ($_SESSION['role'] != "superadmin") { ?>
+                      <td style="text-align: center;">
+                        <div class="form-button-action">
+                          <a href="<?php echo base_url('/datakategori/ubah/') . "/" . $ktg["id_kategori"] ?>">
+                            <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-primary" data-original-title="Ubah">
+                              <i class="fa fa-edit"></i>
+                            </button>
+                          </a>
+                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $ktg["id_kategori"] ?>)" data-original-title="Hapus">
+                            <i class="fa fa-times"></i>
                           </button>
-                        </a>
-                        <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $ktg["id_kategori"] ?>)" data-original-title="Hapus">
-                          <i class="fa fa-times"></i>
-                        </button>
-                      </div>
-                    </td>
+                        </div>
+                      </td>
+                    <?php } ?>
                   </tr>
                 <?php endforeach; ?>
               </tbody>

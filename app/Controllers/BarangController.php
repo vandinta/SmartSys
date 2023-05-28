@@ -50,27 +50,10 @@ class BarangController extends BaseController
             "submenu" => "databarang",
             "title" => "Data Barang",
             "barang" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori', 'left')->orderBy('tb_barang.created_at', 'DESC')->findAll(),
-            // "barangrelasi" => $this->barangmodel->join('tb_kategori', 'tb_kategori.id_kategori=tb_barang.id_kategori')->findAll()
         ];
 
         return view("cms/barang/v_barang", $nilai);
     }
-
-    // public function show($id)
-    // {
-    //     if (!get_cookie("access_token")) {
-    //         return redirect()->to("/");
-    //     }
-
-    //     $nilai = [
-    //         "menu" => "masterdata",
-    //         "submenu" => "databarang",
-    //         "title" => "Data Barang",
-    //         "barang" => $this->barangmodel->where('id_barang', $id)->first()
-    //     ];
-
-    //     return view("cms/barang/v_detaildata", $nilai);
-    // }
 
     public function create()
     {
@@ -330,6 +313,10 @@ class BarangController extends BaseController
     public function delete($id = null)
     {
         if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
             return redirect()->to("/");
         }
 

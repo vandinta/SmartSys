@@ -29,7 +29,6 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-// $routes->get('/', 'Home::index');
 
 // dahboard
 $routes->get("/", "AuthController::index");
@@ -38,9 +37,15 @@ $routes->get("/", "AuthController::index");
 $routes->post("/login", "AuthController::login");
 $routes->get("/logout", "AuthController::logout");
 $routes->get("/viewgetemail", "AuthController::viewgetEmail");
+$routes->get("/lupakatasandi", "AuthController::lupakatasandi");
 $routes->post("/getemail", "AuthController::getEmail");
+$routes->post("/getemail_lupakatasandi", "AuthController::getEmailLupakatasandi");
 $routes->get("/aktivasi", "AuthController::aktivasiUser");
+$routes->get("/konfirmasilupakatasandi", "AuthController::konfLupakatasandi");
+$routes->get("/resetkatasandi", "AuthController::resetkatasandi");
+$routes->post("/reset/(:num)", "AuthController::resetSandi/$1");
 
+// routes data kategori
 $routes->group('/datakategori', static function ($routes) {
     $routes->get("", "KategoriController::index");
     $routes->get("tambah", "KategoriController::create");
@@ -54,6 +59,7 @@ $routes->group('/datakategori', static function ($routes) {
     $routes->delete("(:num)", "KategoriController::delete/$1");
 });
 
+// routes data barang
 $routes->group('/databarang', static function ($routes) {
     $routes->get("", "BarangController::index");
     $routes->get("tambah", "BarangController::create");
@@ -67,6 +73,7 @@ $routes->group('/databarang', static function ($routes) {
     $routes->delete("(:num)", "BarangController::delete/$1");
 });
 
+// routes data users
 $routes->group('/datausers', static function ($routes) {
     $routes->get("", "AuthController::listUsers");
     $routes->get("tambah", "AuthController::create");
@@ -76,6 +83,7 @@ $routes->group('/datausers', static function ($routes) {
     $routes->delete("(:num)", "AuthController::delete/$1");
 });
 
+// routes data penjualan dan order
 $routes->group('/datapenjualan', static function ($routes) {
     $routes->get("", "PenjualanController::index");
     $routes->get("tambah", "PenjualanController::create");
@@ -95,6 +103,7 @@ $routes->group('/datapenjualan', static function ($routes) {
     $routes->delete("delete_order/(:num)", "PenjualanController::delete_order/$1");
 });
 
+// routes data model
 $routes->group('/datamodel', static function ($routes) {
     $routes->get("", "MLController::index");
     $routes->get("tambah", "MLController::create");
@@ -102,30 +111,21 @@ $routes->group('/datamodel', static function ($routes) {
     $routes->match(['get', 'post'], "create", "MLController::model");
 });
 
+// routes data prakiraan atau prediksi
 $routes->group('/dataprakiraan', static function ($routes) {
     $routes->get("", "PrakiraanController::index");
     $routes->get("tambah", "PrakiraanController::create");
     $routes->get("detail/(:num)", "PrakiraanController::detail/$1");
-    $routes->post("input", "PrakiraanController::save");
-    $routes->post("edit/(:num)", "PrakiraanController::ganti/$1");
-    $routes->delete("(:num)", "PrakiraanController::delete/$1");
+    $routes->post("input", "PrakiraanController::model");
+    $routes->match(['get', 'post'], "update/(:num)", "PrakiraanController::updatePrediksi/$1");
 });
 
-$routes->get("/history", "AuthController::index");
-
+// routes ubah password dan setting akun
 $routes->get("/ubahpassword/(:segment)", "AuthController::ubah/$1");
 $routes->get("/setting/(:segment)", "AuthController::edit/$1");
 $routes->get("/karyawan", "AuthController::listKaryawan");
 $routes->post("/ubahpassword/(:num)", "AuthController::ganti/$1");
 $routes->post("/setting/edit/(:num)", "AuthController::update/$1");
-// $routes->get("/pages/index", "Pages::index");
-// $routes->get("/pages/about", "Pages::about");
-// $routes->get("/pages/contact", "Pages::contact");
-// $routes->get("/berita", "Berita::index");
-// $routes->get("/berita/index", "Berita::index");
-// $routes->get("/berita/create", "Berita::create");
-// $routes->get("/berita/edit/(:segment)", "Berita::edit/$1");
-// $routes->get("/berita/(:any)", "Berita::detail/$1");
 
 /*
  * --------------------------------------------------------------------

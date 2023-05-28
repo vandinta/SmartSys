@@ -21,11 +21,6 @@ class Cart extends Migration
 				'unsigned'       => true,
 				'null'			=> true,
 			],
-			// 'nama_barang'       => [
-			// 	'type'           => 'VARCHAR',
-			// 	'constraint'     => 255,
-			// 	'null'           => false,
-			// ],
 			'harga_beli_barang'       => [
 				'type'           => 'VARCHAR',
 				'constraint'     => 255,
