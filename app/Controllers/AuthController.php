@@ -363,7 +363,7 @@ class AuthController extends BaseController
                     "email" => $dataemail,
                     "link" => $link,
                     "linkaduan" => $linkaduan,
-                    "logo" => base_url("Atlantis/assets/img/logo.svg")
+                    "logo" => base_url("assets/icon/logo.png")
                 ];
 
                 $message = view('template/email.html', $datatemplate);
@@ -459,7 +459,7 @@ class AuthController extends BaseController
                         "email" => $dataemail,
                         "link" => $link,
                         "linkaduan" => $linkaduan,
-                        "logo" => base_url("Atlantis/assets/img/logo.svg")
+                        "logo" => base_url("assets/icon/logo.png")
                     ];
 
                     $message = view('template/email_aktivasi.html', $datatemplate);
@@ -519,7 +519,7 @@ class AuthController extends BaseController
                     "email" => $dataemail,
                     "link" => $link,
                     "linkaduan" => $linkaduan,
-                    "logo" => base_url("Atlantis/assets/img/logo.svg")
+                    "logo" => base_url("assets/icon/logo.png")
                 ];
 
                 $message = view('template/email_konflupakatasandi.html', $datatemplate);
@@ -604,7 +604,7 @@ class AuthController extends BaseController
                 $datatemplate = [
                     "email" => $datauser['email'],
                     "link" => $link,
-                    "logo" => base_url("Atlantis/assets/img/logo.svg")
+                    "logo" => base_url("assets/icon/logo.png")
                 ];
 
                 $message = view('template/lupakatasandi.html', $datatemplate);

@@ -1,5 +1,9 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+	<title>Karyawan - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
