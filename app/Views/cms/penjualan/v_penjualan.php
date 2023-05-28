@@ -1,7 +1,7 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
 <?= $this->section("title") ?>
-	<title>Penjualan - SmartSys</title>
+<title>Penjualan - SmartSys</title>
 <?= $this->endSection() ?>
 
 <?= $this->section("content") ?>
@@ -46,38 +46,37 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
-                  <th>Penjualan</th>
-                  <th>Total Pembelian</th>
-                  <th style="width: 8%" <?php if ($_SESSION['role'] == "superadmin") {
-                                          echo "hidden";
-                                        } ?>>Aksi</th>
+                  <th style="width: 9%; text-align: center;">No</th>
+                  <th style="width: auto; text-align: center;">Informasi Penjualan</th>
+                  <th style="width: auto; max-width:170px; text-align: center;">Total Pembelian</th>
+                  <?php if ($_SESSION['role'] != "superadmin") { ?>
+                    <th style="width: 13%; text-align: center;">Aksi</th>
+                  <?php } ?>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
                 <?php foreach ($penjualan as $pjl) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
-                    <td><?= $pjl["nama_penjualan"] ?></td>
-                    <td><?= rupiah($pjl["total_harga"]) ?></td>
-                    <?php  ?>
-                    <td <?php if ($_SESSION['role'] == "superadmin") {
-                          echo "hidden";
-                        } ?>>
-                      <div class="form-button-action">
-                        <a href="<?= base_url('/datapenjualan/ubah/') . "/" . $pjl["id_penjualan"] ?>">
-                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
-                            <i class="fa fa-eye"></i>
+                    <th scope="row" style="text-align: center;"><?= $no++ ?></th>
+                    <td style="text-align: center;"><?= $pjl["nama_penjualan"] ?></td>
+                    <td style="text-align: center;"><?= rupiah($pjl["total_harga"]) ?></td>
+                    <?php if ($_SESSION['role'] != "superadmin") { ?>
+                      <td style="text-align: center;">
+                        <div class="form-button-action">
+                          <a href="<?= base_url('/datapenjualan/ubah/') . "/" . $pjl["id_penjualan"] ?>">
+                            <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
+                              <i class="fa fa-eye"></i>
+                            </button>
+                          </a>
+                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $pjl["id_penjualan"] ?>)" data-original-title="Hapus" <?php if ($pjl["created_at"] <= $waktu_awal && $pjl["created_at"] <= $waktu_akhir) {
+                                                                                                                                                                                          echo 'hidden';
+                                                                                                                                                                                        } ?>>
+                            <i class="fa fa-times"></i>
                           </button>
-                        </a>
-                        <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $pjl["id_penjualan"] ?>)" data-original-title="Hapus" <?php if ($pjl["created_at"] <= $waktu_awal && $pjl["created_at"] <= $waktu_akhir) {
-                          echo 'hidden';
-                        } ?>>
-                          <i class="fa fa-times"></i>
-                        </button>
-                      </div>
-                    </td>
+                        </div>
+                      </td>
+                    <?php } ?>
                   </tr>
                 <?php endforeach; ?>
               </tbody>

@@ -40,20 +40,19 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
-                  <th>Nama Model Perhitungan</th>
-                  <th>Nilai Akurasi Model</th>
+                  <th style="width: 13%; text-align: center;">No</th>
+                  <th style="text-align: center;">Nama Model Perhitungan</th>
+                  <th style="text-align: center;">Nilai Akurasi Model</th>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
                 <?php foreach ($model as $mdl) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
-                    <td><?= $mdl["nama_model"] ?></td>
-                    <td>
-                      <?= $mdl["nilai_akurasi"];
-                      ?>
+                    <th scope="row" style="text-align: center;"><?= $no++ ?></th>
+                    <td style="text-align: center;"><?= $mdl["nama_model"] ?></td>
+                    <td style="text-align: center;">
+                      <?= str_replace(".", ",", $mdl["nilai_akurasi"]) . ' %'; ?>
                     </td>
                     <?php  ?>
                 <?php endforeach; ?>

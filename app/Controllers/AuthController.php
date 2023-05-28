@@ -45,6 +45,7 @@ class AuthController extends BaseController
         $delete_all = $this->cartmodel->delete_all();
     }
 
+    // dashboard
     public function index()
     {
         $data = [
@@ -120,6 +121,7 @@ class AuthController extends BaseController
         }
     }
 
+    // list user superadmin
     public function listUsers()
     {
         if (!get_cookie("access_token")) {
@@ -140,6 +142,7 @@ class AuthController extends BaseController
         return view("cms/auth/v_users", $data);
     }
 
+    // list karyawan admin
     public function listKaryawan()
     {
         if (!get_cookie("access_token")) {
@@ -160,6 +163,7 @@ class AuthController extends BaseController
         return view("cms/auth/v_karyawan", $data);
     }
 
+    // login
     public function login()
     {
         $validation = $this->validate([
@@ -235,6 +239,7 @@ class AuthController extends BaseController
         }
     }
 
+    // get tampilan tambah users
     public function create()
     {
         if (!get_cookie("access_token")) {
@@ -255,6 +260,7 @@ class AuthController extends BaseController
         return view("cms/auth/v_tambahdata", $data);
     }
 
+    // save atau input data users
     public function save()
     {
         if (!get_cookie("access_token")) {
@@ -387,6 +393,7 @@ class AuthController extends BaseController
         }
     }
 
+    // get verifikasi user
     public function aktivasiUser()
     {
         $token = $this->request->getVar('token');
@@ -404,6 +411,7 @@ class AuthController extends BaseController
         }
     }
 
+    // get new email verifikasi
     public function viewgetEmail()
     {
         $data = [
@@ -414,6 +422,7 @@ class AuthController extends BaseController
         return view("pages/v_getemail", $data);
     }
 
+    // get new email reset kata sandi
     public function lupakatasandi()
     {
         $data = [
@@ -424,6 +433,7 @@ class AuthController extends BaseController
         return view("pages/v_getemail_lupakatasandi", $data);
     }
 
+    // form input email get verifikasi
     public function getEmail()
     {
         $rules = [
@@ -485,6 +495,7 @@ class AuthController extends BaseController
         }
     }
 
+    // form input email get verifikasi
     public function getEmailLupakatasandi()
     {
         $rules = [
@@ -542,6 +553,7 @@ class AuthController extends BaseController
         }
     }
 
+    // get konfirmasi reset kata sandi
     public function konfLupakatasandi()
     {
         $token = $this->request->getVar('token');
@@ -557,6 +569,7 @@ class AuthController extends BaseController
         }
     }
 
+    // update kata sandi
     public function resetkatasandi()
     {
         $id = $this->request->getVar("data");
@@ -627,6 +640,7 @@ class AuthController extends BaseController
         }
     }
 
+    // ubah kata sandi
     public function ubah($email)
     {
         if (!get_cookie("access_token")) {
@@ -643,6 +657,7 @@ class AuthController extends BaseController
         return view("cms/auth/v_editusers", $data);
     }
 
+    // edit profile
     public function edit($email)
     {
         if (!get_cookie("access_token")) {
@@ -659,6 +674,7 @@ class AuthController extends BaseController
         return view("cms/auth/v_editakun", $data);
     }
 
+    // update kata sandi
     public function ganti($id)
     {
         if (!get_cookie("access_token")) {
@@ -714,6 +730,7 @@ class AuthController extends BaseController
         }
     }
 
+    // update profile
     public function update($id)
     {
         if (!get_cookie("access_token")) {
@@ -795,6 +812,7 @@ class AuthController extends BaseController
         }
     }
 
+    // logout
     public function logout()
     {
         $this->session->destroy();
@@ -802,6 +820,7 @@ class AuthController extends BaseController
         return redirect()->to('/');
     }
 
+    // delete users
     public function delete($id = null)
     {
         $cek = $this->usersmodel->where('user_id', $id)->first();

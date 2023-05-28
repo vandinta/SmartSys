@@ -40,10 +40,9 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 10%; text-align:center;">No</th>
-                  <th>Nama Barang</th>
-                  <!-- <th>Prakiraan</th> -->
-                  <th style="width: 14%; text-align:center;">Aksi</th>
+                  <th style="width: 14%; text-align:center;">No</th>
+                  <th style="text-align:center;">Nama Barang</th>
+                  <th style="width: 16%; text-align:center;">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -51,8 +50,7 @@
                 <?php foreach ($prakiraan as $pra) : ?>
                   <tr>
                     <th scope="row" style="text-align:center;"><?= $no++ ?></th>
-                    <td><?= $pra["nama_barang"] ?></td>
-                    <!-- <td><?= $pra["nama_prakiraan"] ?></td> -->
+                    <td style="text-align:center;"><?= $pra["nama_barang"] ?></td>
                     <td style="text-align:center;">
                       <div class="form-button-action">
                         <a href="<?= base_url('/dataprakiraan/detail/') . "/" . $pra["id_prakiraan"] ?>">
