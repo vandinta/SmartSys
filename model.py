@@ -59,8 +59,6 @@ def main():
   print(f'Given the Array: \n{X.flatten()}')
   print(f'Predict this y: \n {y}')
   
-  # print(X.shape)
-  
   # We do the same thing, but now instead for 12 months
   n_input = 12
   generator = TimeseriesGenerator(scaled_train, scaled_train, length=n_input, batch_size=1)
@@ -78,25 +76,14 @@ def main():
   
   last_train_batch = scaled_train[-12:]
   
-  # print(last_train_batch)
-  
   last_train_batch = last_train_batch.reshape((1, n_input, n_features))
-  
-  # print(model.predict(last_train_batch))
-  
-  # print(scaled_test[0])
   
   test_pembelians = []
 
   first_eval_batch = scaled_train[-n_input:]
   
-  # print('awal', first_eval_batch)
-  # print('asli', train[-n_input:])
-  
   current_batch = first_eval_batch.reshape((1, n_input, n_features))
   
-  # print('c', current_batch)
-
   for i in range(len(test)):
       
       # get the prediction value for the first batch
@@ -108,17 +95,9 @@ def main():
       # use the prediction to update the batch and remove the first value
       current_batch = np.append(current_batch[:,1:,:],[[current_pred]],axis=1)
   
-  # print(test.head(),val.tail())
-  
-  # print(len(test_pembelians))
-  
   true_pembelians = scaler.inverse_transform(test_pembelians)
   
   test['pembelians'] = true_pembelians
-  
-  print(len(true_pembelians))
-  print(true_pembelians)
-  print(len(test['pembelian']))
   
   # RMSE
   rmse = np.sqrt(mean_squared_error(test['pembelian'],test['pembelians']))
@@ -137,14 +116,9 @@ def main():
   
   print('=============================')
   
-  # print(len(cek[-12:]))
-  
   cek_pembelians = []
 
   first_eval_batch = scaled_cek_awal[-n_input:]
-  
-  # print(first_eval_batch)
-  # print(cek_awal[-n_input:])
   
   current_batch = first_eval_batch.reshape((1, n_input, n_features))
 
@@ -158,8 +132,6 @@ def main():
       
       # use the prediction to update the batch and remove the first value
       current_batch = np.append(current_batch[:,1:,:],[[current_pred]],axis=1)
-  
-  # print(cek.head(),val.tail())
   
   true_cek_pembelians = scaler.inverse_transform(cek_pembelians)
   
@@ -182,7 +154,8 @@ def main():
     akurasi = 100 + per
   else:
     akurasi = 100 - per
-  print('nilai akurasi : ', akurasi)
+    
+  akurasi = round(akurasi, 2)
   
   batasmin = int(sys.argv[2])
   if akurasi < batasmin:
@@ -208,7 +181,6 @@ def main():
           json_file.write(model_json)
       # serialize weights to HDF5
       model.save_weights('c:/xampp/htdocs/SmartSys/public/model/' + namamodel)
-      # model.save('c:/xampp/htdocs/SmartSys/public/model/' + namamodel)
       sql_insert = "INSERT INTO tb_model (id_barang, nama_model, nilai_akurasi) VALUES (%s, %s, %s) "
       record_insert = (id, namamodel, akurasi)
       cursor = mydb.cursor()
@@ -221,18 +193,11 @@ def main():
             json_file.write(model_json)
         # serialize weights to HDF5
         model.save_weights('c:/xampp/htdocs/SmartSys/public/model/' + namamodel)
-        # model.save('c:/xampp/htdocs/SmartSys/public/model/' + namamodel)
         sql_update = "UPDATE tb_model set nilai_akurasi = %s where namamodel = %s"
         input_data = (akurasi, namamodel)
         cursor = mydb.cursor()
         cursor.execute(sql_update, input_data)
         mydb.commit()
-    # model_json = model.to_json()
-    # with open("model_test.json", "w") as json_file:
-    #     json_file.write(model_json)
-    # # serialize weights to HDF5
-    # model.save_weights("model_test.h5")
-  
 
 if __name__ == '__main__':
   main()

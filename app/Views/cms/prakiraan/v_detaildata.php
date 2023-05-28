@@ -87,7 +87,7 @@
                 <tr>
                   <th scope="row" style="text-align:center; font-size: 16px;"><?= $no++ ?></th>
                   <td style="text-align:center; font-size: 16px;"><?= bulan_indonesia($pb["bulan"]); ?></td>
-                  <td style="text-align:center; font-size: 16px;"><?= $pb["hasil_prakiraan"]; ?></td>
+                  <td style="text-align:center; font-size: 16px;"><?= $pb["hasil_prakiraan"] . ' Items'; ?></td>
                   <td style="text-align:center; font-size: 16px;">
                     <?php
                     if ($pb['status'] == 'aman') {

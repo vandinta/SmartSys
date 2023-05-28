@@ -182,12 +182,7 @@ class MLController extends BaseController
     header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment;filename=' . $filename);
     header('Cache-Control: max-age=0');
-    // $writer->save('php://output');
-    // $file = readfile('data_' . $filename . '.csv');
-
     $writer->save("dataset/" . $filename);
-
-    // exit();
   }
 
   function createmodel($filename, $lim_akurasi, $id_barang)

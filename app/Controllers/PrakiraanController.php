@@ -162,10 +162,12 @@ class PrakiraanController extends BaseController
             $namaprediksi = strtolower(str_replace(" ", "_", $namaprediksi));
 
             $getidprakiraan = $this->prakiraanmodel->where('id_barang', $id_barang)->first();
-            $cek_data = $this->hasilprakiraanmodel->where('id_prakiraan', $getidprakiraan["id_prakiraan"])->findAll();
-
-            if ($cek_data != null) {
-                $deleteall = $this->hasilprakiraanmodel->where('id_prakiraan', $getidprakiraan["id_prakiraan"])->delete();
+            
+            if ($getidprakiraan != null) {
+                $cek_data = $this->hasilprakiraanmodel->where('id_prakiraan', $getidprakiraan["id_prakiraan"])->findAll();
+                if ($cek_data != null) {
+                    $deleteall = $this->hasilprakiraanmodel->where('id_prakiraan', $getidprakiraan["id_prakiraan"])->delete();
+                }
             }
 
             $this->exportCsv($penjualan, $filename);

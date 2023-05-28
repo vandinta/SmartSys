@@ -76,7 +76,6 @@ def main():
   jumlah = len(dataset_prediksi) - 9
   datafix = dataset_prediksi[jumlah:]
   datafix = datafix.reset_index()
-  print(datafix)
   
   mydb = mysql.connector.connect(
     host="localhost",
@@ -87,9 +86,6 @@ def main():
   
   id = sys.argv[3]
   namaprediksi = sys.argv[4]
-  
-  print(id)
-  print(namaprediksi)
   
   sql_cek = "SELECT * FROM tb_prakiraan WHERE id_barang = %s"
   cursor = mydb.cursor()
