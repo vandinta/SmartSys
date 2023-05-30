@@ -21,7 +21,7 @@ class PrakiraanController extends BaseController
 
     public function __construct()
     {
-        helper(['cookie', 'date', 'form', 'bulan_indo', 'tgl_indo']);
+        helper(['cookie', 'date', 'form', 'nama_bulan_indo', 'bulan_indo', 'tgl_indo']);
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -383,21 +383,45 @@ class PrakiraanController extends BaseController
         }
 
         $nilai_perhitungan = $barang['stok_barang'];
+        $stok = $barang['stok_barang'];
+
         for ($b = 0; $b < count($data_bulan); $b++) {
             if ($data_bulan[$b]["bulan"] != $bulan_1 && $data_bulan[$b]["bulan"] != $bulan_2) {
                 $nilai_perhitungan -= $data_bulan[$b]['hasil_prakiraan'];
+                
+                $bulan_sebelumnya = date("Y-m-01", strtotime("-1 months", strtotime($data_bulan[$b]["bulan"])));
+                $data_bulan_sebelumnya = $this->hasilprakiraanmodel->select("hasil_prakiraan")->where('bulan', $bulan_sebelumnya)->first();
+
+                if ($data_bulan[$b]["bulan"] == $bulan_start) {
+                    $pengurangan_stok = 0;
+                } else {
+                    $pengurangan_stok = $data_bulan_sebelumnya["hasil_prakiraan"];
+                }
+
+                $stok -= $pengurangan_stok;
+
+                if ($stok <= 0) {
+                    $stok = 0;
+                }
+
                 if ($nilai_perhitungan < 0) {
                     $perbandingan[$b]['status'] = 'kurang';
+                    $perbandingan[$b]['stok'] = $stok;
                     $perbandingan[$b]['selisih'] = $nilai_perhitungan;
                 } elseif ($nilai_perhitungan >= 0 && $nilai_perhitungan <= 20) {
                     $perbandingan[$b]['status'] = 'cukup';
+                    $perbandingan[$b]['stok'] = $stok;
                     $perbandingan[$b]['selisih'] = $nilai_perhitungan;
                 } else {
                     $perbandingan[$b]['status'] = 'aman';
+                    $perbandingan[$b]['stok'] = $stok;
                     $perbandingan[$b]['selisih'] = $nilai_perhitungan;
                 }
             }
         }
+
+        // var_dump($perbandingan);
+        // die;
 
         $data = [
             "menu" => "prakiraan",
@@ -405,8 +429,8 @@ class PrakiraanController extends BaseController
             "title" => "Detail Prediksi Penjualan",
             "dataprakiraan" => $this->prakiraanmodel->join('tb_barang', 'tb_barang.id_barang=tb_prakiraan.id_barang')->where('tb_prakiraan.id_prakiraan', $id)->first(),
             "grafik" => $grafik,
-            "perbandingan" => $perbandingan,
             "penjualan" => $penjualan,
+            "perbandingan" => $perbandingan,
         ];
 
         return view("cms/prakiraan/v_detaildata", $data);
