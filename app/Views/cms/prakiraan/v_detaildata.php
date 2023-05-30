@@ -54,7 +54,7 @@
           </div>
         </div>
         <div class="card-body">
-          <table id="list_pembelian" class="table table-hover">
+          <table id="list_pembelian" class="table table-hover table-striped">
             <thead>
               <tr>
                 <th style="width: 1%; text-align:center; font-size: 16px;">No</th>
