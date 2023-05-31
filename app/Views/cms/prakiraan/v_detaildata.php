@@ -36,7 +36,7 @@
             <div class="card-title">Grafik Prediksi Penjualan <?= $dataprakiraan['nama_barang']; ?></div>
             <div class="ml-auto">
             </div>
-            <a href="<?php echo base_url('/dataprakiraan/update') . '/' . $dataprakiraan['id_barang']; ?>" type="button" class="btn btn-primary btn-round ml-2"><i class="fa flaticon-repeat"></i> Perbarui Prediksi</a>
+            <a href="<?php echo base_url('/dataprakiraan/update') . '/' . $dataprakiraan['id_barang']; ?>" type="button" class="btn btn-primary btn-round ml-2" onclick="perbarui()"><i class="fa flaticon-repeat"></i> Perbarui Prediksi</a>
           </div>
         </div>
         <div class="card-body">
@@ -222,5 +222,41 @@
       },
     }
   });
+
+  function perbarui() {
+    Swal.fire({
+      title: 'Sedang Diproses!',
+      html: 'mohon tunggu proses sampai selesai',
+      allowEscapeKey: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    });
+  }
+
+  <?php if (session()->getFlashdata('gagal_diproses') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Prediksi Barang Tidak Memiliki Data Yang Cukup!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+
+  <?php if (session()->getFlashdata('gagal_diperbarui') != NULL) { ?>
+    Swal.fire({
+      icon: 'error',
+      title: 'Prediksi Barang Gagal Diperbarui!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
+
+  <?php if (session()->getFlashdata('berhasil_diperbarui') != NULL) { ?>
+    Swal.fire({
+      icon: 'success',
+      title: 'Prediksi Barang Berhasil Diperbarui!',
+      confirmButtonColor: '#1572E8',
+    });
+  <?php } ?>
 </script>
 <?= $this->endSection() ?>

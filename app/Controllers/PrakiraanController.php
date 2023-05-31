@@ -241,13 +241,13 @@ class PrakiraanController extends BaseController
         }
 
         if ($penjualan == null) {
-            $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-            return redirect()->to("/dataprakiraan/tambah");
+            $this->session->setFlashdata('gagal_diperbarui', 'Data anda tidak valid');
+            return redirect()->to("/dataprakiraan/detail/" . $getidprakiraan["id_prakiraan"]);
         }
 
         if ($penjualan < 12) {
             $this->session->setFlashdata('gagal_proses', 'Data anda tidak mencukupi');
-            return redirect()->to("/dataprakiraan/tambah");
+            return redirect()->to("/dataprakiraan/detail/" . $getidprakiraan["id_prakiraan"]);
         }
 
         for ($i = 0; $i < 6; $i++) {
@@ -278,12 +278,12 @@ class PrakiraanController extends BaseController
         if (file_exists('dataset/' . $filename . '.csv')) {
             $this->createprediksi($filename, $namamodel, $id_barang, $namaprediksi);
         } else {
-            $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-            return redirect()->to("/dataprakiraan/tambah");
+            $this->session->setFlashdata('gagal_diperbarui', 'Data anda tidak valid');
+            return redirect()->to("/dataprakiraan/detail/" . $getidprakiraan["id_prakiraan"]);
         }
 
-        $this->session->setFlashdata("berhasil_tambah", "Data Barang Berhasil Ditambahkan");
-        return redirect()->to("/dataprakiraan");
+        $this->session->setFlashdata("berhasil_diperbarui", "Data Barang Berhasil Ditambahkan");
+        return redirect()->to("/dataprakiraan/detail/" . $getidprakiraan["id_prakiraan"]);
     }
 
     function exportCsv($penjualan, $filename)
@@ -419,9 +419,6 @@ class PrakiraanController extends BaseController
                 }
             }
         }
-
-        // var_dump($perbandingan);
-        // die;
 
         $data = [
             "menu" => "prakiraan",
