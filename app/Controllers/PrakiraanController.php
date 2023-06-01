@@ -364,20 +364,18 @@ class PrakiraanController extends BaseController
         $bulan_1 = date("Y-m-01", strtotime("-1 months", strtotime($bulan_start)));
         $bulan_2 = date("Y-m-01", strtotime("-2 months", strtotime($bulan_start)));
         $bulan_pra1 = date("Y-m-01", strtotime("+4 months", strtotime($bulan_start)));
-        $bulan_pra2 = date("Y-m-01", strtotime("+5 months", strtotime($bulan_start)));
-        $bulan_pra3 = date("Y-m-01", strtotime("+6 months", strtotime($bulan_start)));
 
         $nilai = $this->hasilprakiraanmodel->where('id_prakiraan', $id)->findAll();
         $barang = $this->barangmodel->where('id_barang', $data_prakiraan['id_barang'])->first();
 
         for ($c = 0; $c < count($nilai); $c++) {
-            if ($nilai[$c]['bulan'] != $bulan_1 && $nilai[$c]['bulan'] != $bulan_2) {
+            if (strtotime($nilai[$c]['bulan']) >= strtotime($bulan_start)) {
                 $perbandingan[$c] = $nilai[$c];
             }
         }
 
         for ($d = 0; $d < count($nilai); $d++) {
-            if ($nilai[$d]['bulan'] != $bulan_pra1 && $nilai[$d]['bulan'] != $bulan_pra2 && $nilai[$d]['bulan'] != $bulan_pra3) {
+            if (strtotime($nilai[$d]['bulan']) >= strtotime($bulan_2) && strtotime($nilai[$d]['bulan']) < strtotime($bulan_pra1)) {
                 $grafik[$d] = $nilai[$d];
             }
         }
@@ -386,16 +384,18 @@ class PrakiraanController extends BaseController
         $stok = $barang['stok_barang'];
 
         for ($b = 0; $b < count($data_bulan); $b++) {
-            if ($data_bulan[$b]["bulan"] != $bulan_1 && $data_bulan[$b]["bulan"] != $bulan_2) {
+            if (strtotime($data_bulan[$b]["bulan"]) >= strtotime($bulan_start)) {
                 $nilai_perhitungan -= $data_bulan[$b]['hasil_prakiraan'];
                 
                 $bulan_sebelumnya = date("Y-m-01", strtotime("-1 months", strtotime($data_bulan[$b]["bulan"])));
                 $data_bulan_sebelumnya = $this->hasilprakiraanmodel->select("hasil_prakiraan")->where('bulan', $bulan_sebelumnya)->first();
-
+                
                 if ($data_bulan[$b]["bulan"] == $bulan_start) {
                     $pengurangan_stok = 0;
+                    $perbandingan[$b]['catatan'] = 1;
                 } else {
                     $pengurangan_stok = $data_bulan_sebelumnya["hasil_prakiraan"];
+                    $perbandingan[$b]['catatan'] = 0;
                 }
 
                 $stok -= $pengurangan_stok;

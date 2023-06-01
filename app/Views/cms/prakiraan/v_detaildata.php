@@ -84,12 +84,22 @@
                   </td>
                   <td style="text-align:justify; height: 73px;">
                     <?php
-                    if ($pb['selisih'] < 0) {
-                      echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Tidak Mencukupi, Untuk Memenuhi Kebutuhan Tersebut Perlu Ditambahkan Stok Barang Sebanyak ' . abs($pb['selisih']) . ' Items';
-                    } elseif ($pb['selisih'] == 0) {
-                      echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Tidak Memiliki Sisa';
+                    if ($pb['catatan'] == 1) {
+                      if ($pb['selisih'] < 0) {
+                        echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Tidak Mencukupi, Untuk Memenuhi Kebutuhan Tersebut Perlu Ditambahkan Stok Barang Sebanyak ' . abs($pb['selisih']) . ' Items';
+                      } elseif ($pb['selisih'] == 0) {
+                        echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Tidak Memiliki Sisa';
+                      } else {
+                        echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Memiliki Sisa Sebanyak ' . abs($pb['selisih']) . ' Items';
+                      }
                     } else {
-                      echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Memiliki Sisa Sebanyak ' . abs($pb['selisih']) . ' Items';
+                      if ($pb['selisih'] < 0) {
+                        echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Diprediksikan Akan Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Tidak Mencukupi, Untuk Memenuhi Kebutuhan Tersebut Perlu Ditambahkan Stok Barang Sebanyak ' . abs($pb['selisih']) . ' Items';
+                      } elseif ($pb['selisih'] == 0) {
+                        echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Diprediksikan Akan Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Tidak Memiliki Sisa';
+                      } else {
+                        echo 'Stok ' . $dataprakiraan['nama_barang'] . ' Pada Bulan ' . nama_bulan_indonesia($pb["bulan"]) . ' Diprediksikan Akan Berjumlah ' . $pb["stok"] . ' Items, Jika Dibandingkan Dengan Jumlah Prediksi Penjualan Pada Bulan Ini Stok Tersebut Memiliki Sisa Sebanyak ' . abs($pb['selisih']) . ' Items';
+                      }
                     }
                     ?>
                     <!-- if ($pb['selisih'] < 0) {
