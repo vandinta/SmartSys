@@ -144,7 +144,7 @@
                                                               } elseif ($stk["stok_barang"] < 20) {
                                                                 echo '<span class="text-danger pl-3">Menipis</span>';
                                                               } elseif ($stk["stok_barang"] < 50) {
-                                                                echo '<span class="text-warning pl-3">Sedang</span>';
+                                                                echo '<span class="text-warning pl-3">Cukup</span>';
                                                               } else {
                                                                 echo '<span class="text-success pl-3">Aman</span>';
                                                               }

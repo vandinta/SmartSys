@@ -307,6 +307,9 @@ class PenjualanController extends BaseController
             ]
         ];
 
+        $bulan_sekarang = date("Y-m", $t);
+        $bulan = $bulan_sekarang . '-01';
+
         if ($this->validate($rules, $messages)) {
 
             $id_barang = $this->request->getVar("id_barang");
@@ -320,6 +323,7 @@ class PenjualanController extends BaseController
                 "harga_jual_barang" => $get['harga_jual'],
                 "jumlah_barang" => $this->request->getVar("qty"),
                 "jumlah_harga" => $this->request->getVar("jumlah_harga_barang"),
+                "bulan" => $bulan,
             ];
 
             $this->ordermodel->save($data);
@@ -494,11 +498,11 @@ class PenjualanController extends BaseController
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
         }
-        
+
         if ($this->decoded->role == "superadmin") {
             return redirect()->to("/");
         }
-        
+
         $cek = $this->ordermodel->where('id_order', $id)->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->first();
 
         $t = now('Asia/Jakarta');
@@ -547,13 +551,47 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
-        $cek = $this->penjualanmodel->where('id_penjualan', $id)->first();
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
 
-        if ($this->penjualanmodel->delete($id)) {
+        $cek = $this->penjualanmodel->where('id_penjualan', $id)->first();
+        $wkt_penjualan = strtotime($cek["created_at"]);
+        $waktu_penjualan = date("Y-m-d", $wkt_penjualan);
+
+        
+        if ($waktu_penjualan != $time) {
             return $this->response->setJSON([
-                'error' => false,
-                'message' => 'Data ' . $cek['nama_penjualan'] . ' Berhasil Dihapus!'
+                'error' => true,
+                'message' => 'Data ' . $cek['nama_penjualan'] . ' Gagal Dihapus!'
             ]);
+            // return redirect()->to("/datapenjualan");
+        }
+        
+        if ($cek != null) {
+            $cek_order = $this->ordermodel->where('id_penjualan', $id)->findAll();
+            
+            if ($cek_order != null) {
+                for ($i = 0; $i < count($cek_order); $i++) {
+                    $cek_barang = $this->barangmodel->where('id_barang', $cek_order[$i]['id_barang'])->first();
+                    $cek_barang['stok_barang'] = $cek_barang['stok_barang'] + $cek_order[$i]['jumlah_barang'];
+                    $data_barang = [
+                        'stok_barang' => $cek_barang['stok_barang'],
+                    ];
+                    $this->barangmodel->update($cek_barang['id_barang'], $data_barang);
+                }
+            }
+            
+            if ($this->penjualanmodel->delete($id)) {
+                return $this->response->setJSON([
+                    'error' => false,
+                    'message' => 'Data ' . $cek['nama_penjualan'] . ' Berhasil Dihapus!'
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'error' => true,
+                    'message' => 'Data ' . $cek['nama_penjualan'] . ' Gagal Dihapus!'
+                ]);
+            }
         } else {
             return $this->response->setJSON([
                 'error' => true,

@@ -1,7 +1,7 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
 <?= $this->section("title") ?>
-	<title>Barang - SmartSys</title>
+<title>Barang - SmartSys</title>
 <?= $this->endSection() ?>
 
 <?= $this->section("content") ?>
@@ -30,18 +30,17 @@
   </div>
   <div class="row">
     <div class="col-md-5">
-      <!-- <div class="card-header">
-        <div class="card-title"><?= $title; ?></div>
-      </div> -->
       <div class="card">
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 col-lg-12">
               <div class="card-body">
-                <!-- <div class="tab-pane fade show active" id="pills-home-nobd" role="tabpanel" aria-labelledby="pills-home-tab-nobd"> -->
                 <h4>Gambar Barang</h4>
-                <img src="<?= base_url("assets/image/barang/" . $barang["image_barang"]); ?>" class="avatar-img rounded" style="max-width:auto; height: auto;">
-                <!-- </div> -->
+                <?php if ($barang["image_barang"] == null) {
+                  echo "<br><h5>Tidak Ada Foto</h5>";
+                } else { ?>
+                  <img src="<?= base_url("assets/image/barang/" . $barang["image_barang"]); ?>" class="avatar-img rounded" style="max-width:auto; height: auto;">
+                <?php } ?>
               </div>
             </div>
           </div>
@@ -50,9 +49,6 @@
     </div>
     <div class="col-md-7">
       <div class="card">
-        <!-- <div class="card-header">
-          <div class="card-title"><?= $title; ?></div>
-        </div> -->
         <div class="col-md-6 col-lg-12">
           <div class="card-body">
             <form action="<?php echo base_url('/databarang/edit/') . "/" . $barang["id_barang"] ?>" method="post" enctype="multipart/form-data">

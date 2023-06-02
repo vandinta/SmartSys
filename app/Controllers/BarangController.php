@@ -266,14 +266,23 @@ class BarangController extends BaseController
             if ($this->validate($rules_image, $messages_image)) {
                 $oldimagebarang = $cek['image_barang'];
                 $dataimagebarang = $this->request->getFile('image_barang');
-                if ($dataimagebarang->isValid() && !$dataimagebarang->hasMoved()) {
-                    if (file_exists("assets/image/barang/" . $oldimagebarang)) {
-                        unlink("assets/image/barang/" . $oldimagebarang);
+                if ($oldimagebarang != null) {
+                    if ($dataimagebarang->isValid() && !$dataimagebarang->hasMoved()) {
+                        if (file_exists("assets/image/barang/" . $oldimagebarang)) {
+                            unlink("assets/image/barang/" . $oldimagebarang);
+                        }
+                        $imagebarangFileName = $dataimagebarang->getRandomName();
+                        $dataimagebarang->move('assets/image/barang/', $imagebarangFileName);
+                    } else {
+                        $imagebarangFileName = $oldimagebarang['profile_picture'];
                     }
-                    $imagebarangFileName = $dataimagebarang->getRandomName();
-                    $dataimagebarang->move('assets/image/barang/', $imagebarangFileName);
                 } else {
-                    $imagebarangFileName = $oldimagebarang['profile_picture'];
+                    if ($dataimagebarang->isValid() && !$dataimagebarang->hasMoved()) {
+                        $imagebarangFileName = $dataimagebarang->getRandomName();
+                        $dataimagebarang->move('assets/image/barang/', $imagebarangFileName);
+                    } else {
+                        $imagebarangFileName = $oldimagebarang['profile_picture'];
+                    }
                 }
 
                 $data = [

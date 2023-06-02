@@ -132,7 +132,12 @@ class PrakiraanController extends BaseController
 
             for ($b = 0; $b < count($waktu); $b++) {
                 $penjualan[$b] = $this->ordermodel->select('bulan')->selectSum('jumlah_barang')->where('id_barang', $id_barang)->where('bulan', $waktu[$b]["bulan"])->groupBy('bulan')->find();
-                $penjualan[$b] = $penjualan[$b][0];
+                if ($penjualan[$b] != null) {
+                    $penjualan[$b] = $penjualan[$b][0];
+                } else {
+                    $penjualan[$b]['bulan'] = $waktu[$b]["bulan"];
+                    $penjualan[$b]['jumlah_barang'] = 0;
+                }
             }
 
             if ($penjualan == null) {
