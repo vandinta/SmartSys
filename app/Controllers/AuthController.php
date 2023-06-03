@@ -767,8 +767,10 @@ class AuthController extends BaseController
                 $oldprofile = $cek['profile_picture'];
                 $dataprofile = $this->request->getFile('profile_picture');
                 if ($dataprofile->isValid() && !$dataprofile->hasMoved()) {
-                    if (file_exists("assets/image/profile/" . $oldprofile)) {
-                        unlink("assets/image/profile/" . $oldprofile);
+                    if ($oldprofile != 'default.png') {
+                        if (file_exists("assets/image/profile/" . $oldprofile)) {
+                            unlink("assets/image/profile/" . $oldprofile);
+                        }
                     }
                     $profileFileName = $dataprofile->getRandomName();
                     $dataprofile->move('assets/image/profile/', $profileFileName);
@@ -789,8 +791,8 @@ class AuthController extends BaseController
                     "profile_picture" => $data['profile_picture']
                 ];
 
-                $this->session->push('username', ["username" => $data['username']]);
-                $this->session->push('profile_picture', ["profile_picture" => $data['profile_picture']]);
+                unset($_SESSION['username'], $_SESSION['profile_picture']);
+                $this->session->set($user_data);
 
                 session()->setFlashdata("berhasil_diubah", " ");
                 return redirect()->to("/setting" . "/" . $cek["email"]);
@@ -802,6 +804,10 @@ class AuthController extends BaseController
             ];
 
             $this->usersmodel->save($data);
+
+            unset($_SESSION['username']);
+            $this->session->set('username', $data['username']);
+
             session()->setFlashdata("berhasil_diubah", " ");
             return redirect()->to("/setting" . "/" . $cek["email"]);
         } else {
