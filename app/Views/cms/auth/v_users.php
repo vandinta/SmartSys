@@ -1,5 +1,9 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+	<title>Users - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
@@ -32,11 +36,11 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
-                  <th>Email</th>
-                  <th>Username</th>
-                  <th>role</th>
-                  <th style="width: 8%">Aksi</th>
+                  <th style="width: 9%; text-align: center;">No</th>
+                  <th style="text-align: center;">Email</th>
+                  <th style="text-align: center;">Username</th>
+                  <th style="text-align: center;">role</th>
+                  <th style="width: 11%; text-align: center;">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -44,14 +48,14 @@
                 <?php foreach ($users as $us) : ?>
                   <tr>
                     <th scope="row"><?= $no++ ?></th>
-                    <td><?= $us["email"] ?></td>
-                    <td><?= $us["username"];?></td>
-                    <td><?= $us["role"] ?></td>
-                    <td>
+                    <td style="text-align: center;"><?= $us["email"] ?></td>
+                    <td style="text-align: center;"><?= $us["username"];?></td>
+                    <td style="text-align: center;"><?= $us["role"] ?></td>
+                    <td style="text-align: center;">
                       <div class="form-button-action">
-                        <a href="<?= base_url('/datausers/ubah/') . "/" . $us["user_id"] ?>">
-                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-success" data-original-title="Detail">
-                            <i class="fa fa-eye"></i>
+                        <a href="<?= base_url('/datausers/ubah/') . "/" . $us["email"] ?>">
+                          <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-primary" data-original-title="Detail">
+                            <i class="fa fa-edit"></i>
                           </button>
                         </a>
                         <button type="button" data-toggle="tooltip" title="" class="btn btn-link btn-danger" onclick="hapus(<?= $us["user_id"] ?>)" data-original-title="Hapus">

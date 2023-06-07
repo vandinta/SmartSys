@@ -1,5 +1,9 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+	<title>Penjualan - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
@@ -35,12 +39,15 @@
             <?= csrf_field() ?>
             <div class="form-group">
               <label for="pencarian">Cari Nama Barang</label>
-              <select class="form-control" style="margin: 10px;" id="id_barang" name="id_barang" onchange="Hitung(this);" autofocus>
+              <select class="form-control <?= validation_show_error("id_barang") ? 'is-invalid' : ""; ?>" style="margin: 10px; width: 100%;" id="id_barang" name="id_barang" onchange="Hitung(this);" autofocus>
                 <option value=""></option>
                 <?php foreach ($barang as $brg) : ?>
                   <option data-harga="<?= $brg['harga_jual'] ?>" data-nama="<?= $brg['nama_barang'] ?>" value="<?= $brg['id_barang'] ?>"><?= $brg['nama_barang'] ?></option>
                 <?php endforeach; ?>
               </select>
+              <div class="invalid-feedback">
+                <?= validation_show_error("id_barang") ?>
+              </div>
             </div>
             <!-- <input type="hidden" id="nama_barang" name="nama_barang[]"> -->
             <div class="form-group">
@@ -57,7 +64,10 @@
             </div>
             <div class="form-group">
               <label for="qty">QTY</label>
-              <input type="number" class="form-control" id="qty" name="qty" onchange="Hitung(this);" placeholder="QTY">
+              <input type="number" class="form-control <?= validation_show_error("qty") ? 'is-invalid' : ""; ?>" id="qty" name="qty" onchange="Hitung(this);" placeholder="QTY">
+              <div class="invalid-feedback">
+                <?= validation_show_error("qty") ?>
+              </div>
             </div>
             <div class="form-group">
               <label for="jumlah_harga">Jumlah Harga</label>
@@ -87,11 +97,11 @@
         </div>
         <div class="card-body">
           <div class="form-group">
-            <h2><?php if($harga['total_harga'] != null){
-              echo rupiah($harga['total_harga']);
-            } else {
-              echo rupiah('0');
-            } ?></h2>
+            <h2><?php if ($harga['total_harga'] != null) {
+                  echo rupiah($harga['total_harga']);
+                } else {
+                  echo rupiah('0');
+                } ?></h2>
           </div>
         </div>
       </div>

@@ -1,5 +1,9 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+	<title>Karyawan - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
@@ -31,20 +35,20 @@
             <table id="add-row" class="display table table-striped table-hover">
               <thead>
                 <tr>
-                  <th style="width: 9%">No</th>
-                  <th>Email</th>
-                  <th>Username</th>
-                  <th>Terakhir Login</th>
+                  <th style="width: 9%; text-align:center;">No</th>
+                  <th style="text-align:center;">Email</th>
+                  <th style="text-align:center;">Username</th>
+                  <th style="width: 32%; text-align:center;">Terakhir Login</th>
                 </tr>
               </thead>
               <tbody>
                 <?php $no = 1; ?>
                 <?php foreach ($karyawan as $kyn) : ?>
                   <tr>
-                    <th scope="row"><?= $no++ ?></th>
-                    <td><?= $kyn["email"] ?></td>
-                    <td><?= $kyn["username"] ?></td>
-                    <td><?php if ($kyn["last_login"] != null) {
+                    <th scope="row" style="text-align:center;"><?= $no++ ?></th>
+                    <td style="text-align:center;"><?= $kyn["email"] ?></td>
+                    <td style="text-align:center;"><?= $kyn["username"] ?></td>
+                    <td style="text-align:center;"><?php if ($kyn["last_login"] != null) {
                       echo tgl_indonesia($kyn["last_login"]);
                     } ?></td>
                   </tr>

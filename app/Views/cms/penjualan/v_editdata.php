@@ -1,5 +1,9 @@
 <?= $this->extend("cms/layout/v_template") ?>
 
+<?= $this->section("title") ?>
+	<title>Penjualan - SmartSys</title>
+<?= $this->endSection() ?>
+
 <?= $this->section("content") ?>
 <div class="page-inner">
   <div class="page-header">
@@ -35,11 +39,14 @@
             <?= csrf_field() ?>
             <div class="form-group">
               <label for="nama_penjualan">Nama Penjualan</label>
-              <input type="text" class="form-control" id="nama_penjualan" name="nama_penjualan" value="<?= old("nama_penjualan")
-                                                                                                          ? old("nama_penjualan")
-                                                                                                          : $penjualan["nama_penjualan"] ?>" placeholder="Nama Penjualan" <?php if ($expired != 1) {
-                                                                                                                                                                            echo 'disabled';
-                                                                                                                                                                          } ?>>
+              <input type="text" class="form-control <?= validation_show_error("nama_penjualan") ? 'is-invalid' : ""; ?>" id="nama_penjualan" name="nama_penjualan" value="<?= old("nama_penjualan")
+                                                                                                                                                                              ? old("nama_penjualan")
+                                                                                                                                                                              : $penjualan["nama_penjualan"] ?>" placeholder="Nama Penjualan" <?php if ($expired != 1) {
+                                                                                                                                                                                                                                                echo 'disabled';
+                                                                                                                                                                                                                                              } ?>>
+              <div class="invalid-feedback">
+                <?= validation_show_error("nama_penjualan") ?>
+              </div>
             </div>
             <div class="form-group">
               <label for="user">Di Inputkan Oleh</label>
@@ -116,6 +123,9 @@
               <?php endforeach; ?>
             </tbody>
           </table>
+        </div>
+        <div class="card-action">
+          <a href="<?php echo base_url('/datapenjualan') ?>" type="button" class="btn btn-outline-danger float-right mr-2">Kembali</a>
         </div>
       </div>
     </div>
@@ -232,7 +242,7 @@
 
     $('#harga_barang').val(harga);
     $('#jumlah_harga').val(total);
-    $('#jumlah_harga_hide').val(total);
+    $('#jumlah_harga_barang').val(total);
   }
 
   $(document).ready(function() {

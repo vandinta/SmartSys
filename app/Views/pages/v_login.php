@@ -9,7 +9,7 @@
   <meta content="" name="description">
 
   <!-- Favicon -->
-  <link href="dashmin/img/favicon.ico" rel="icon">
+  <link href="assets/icon/icon.svg" rel="icon">
 
   <!-- Google Web Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,6 +46,11 @@
       <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
         <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
           <div class="bg-light rounded p-4 p-sm-5 my-4 mx-3">
+            <?php if (session()->getFlashdata('berhasil') !== NULL) : ?>
+              <div class="alert alert-success" role="alert">
+                <?php echo session()->getFlashdata('berhasil'); ?>
+              </div>
+            <?php endif; ?>
             <?php if (session()->getFlashdata('error') !== NULL) : ?>
               <div class="alert alert-danger" role="alert">
                 <?php echo session()->getFlashdata('error'); ?>
@@ -75,7 +80,10 @@
                   <input type="checkbox" class="form-check-input" id="remember" name="remember" value="remember">
                   <label class="form-check-label" for="exampleCheck1">Remember Me</label>
                 </div>
-                <a href="">Forgot Password</a>
+                <div class="form-check">
+                  <a href="<?php echo base_url("/lupakatasandi") ?>"><label class="form-check-label" for="exampleCheck2">Lupa Kata Sandi</label></a>
+                </div>
+                <!-- <a href="">Forgot Password</a> -->
               </div>
               <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign In</button>
             </form>

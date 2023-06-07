@@ -3,24 +3,37 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\PenjualanModel;
 use App\Models\UsersModel;
 use App\Models\CartModel;
+use App\Models\OrderModel;
+use App\Models\BarangModel;
 use Firebase\JWT\JWT;
+use PhpOffice\PhpSpreadsheet\Calculation\DateTimeExcel\Days;
+use PHPUnit\Framework\Constraint\Count;
 
 class AuthController extends BaseController
 {
     private $session;
+    private $sendemail;
+    protected $penjualanmodel;
     protected $usersmodel;
     protected $cartmodel;
+    protected $ordermodel;
+    protected $barangmodel;
     protected $decoded;
 
     public function __construct()
     {
-        helper(['cookie', 'date', 'tgl_indo']);
+        helper(['cookie', 'date', 'tgl_indo', 'form', 'rupiah']);
 
         $this->session = \Config\Services::session();
+        $this->sendemail = \Config\Services::email();
         $this->usersmodel = new UsersModel();
         $this->cartmodel = new Cartmodel();
+        $this->penjualanmodel = new PenjualanModel();
+        $this->ordermodel = new Ordermodel();
+        $this->barangmodel = new Barangmodel();
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -32,6 +45,7 @@ class AuthController extends BaseController
         $delete_all = $this->cartmodel->delete_all();
     }
 
+    // dashboard
     public function index()
     {
         $data = [
@@ -39,18 +53,75 @@ class AuthController extends BaseController
             "validation" => \Config\Services::validation(),
         ];
 
+        if (!get_cookie("access_token")) {
+            return view("pages/v_login", $data);
+        }
+
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+        $bulan = date("Y-m", $t);
+        $bulan = $bulan . '-01';
+
+        $waktu_awal = $time . " 00:00:01";
+        $waktu_akhir = $time . " 23:59:59";
+
+        $transaksi = $this->penjualanmodel->selectCount("id_penjualan")->like('created_at', $time)->findAll();
+
+        $items = $this->ordermodel->selectSum("jumlah_barang")->like('created_at', $time)->findAll();
+
+        $penjualan = $this->ordermodel->like('created_at', $time)->findAll();
+
+        $keuntungan = 0;
+        for ($i = 0; $i < count($penjualan); $i++) {
+            $keuntungan += ($penjualan[$i]['harga_jual_barang'] - $penjualan[$i]['harga_beli_barang']) * $penjualan[$i]['jumlah_barang'];
+        }
+
+        $barang = $this->barangmodel->findAll();
+
+        $cekbulan = $this->ordermodel->like('bulan', $bulan)->findAll();
+        if ($cekbulan == null) {
+            $hasilbulanan = 'kosong';
+        } else {
+            for ($a = 0; $a < count($barang); $a++) {
+                $penjualanbulanan[$a] = $this->ordermodel->select('tb_barang.nama_barang, tb_order.bulan')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$a]['id_barang'])->like('tb_order.bulan', $bulan)->first();
+
+                if ($penjualanbulanan[$a]['nama_barang'] != null) {
+                    $hasilbulanan[$a] = $penjualanbulanan[$a];
+                }
+            }
+        }
+
+        $cekhari = $this->ordermodel->where("created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->findAll();
+
+        if ($cekhari == null) {
+            $hasilharian = 'kosong';
+        } else {
+            for ($b = 0; $b < count($barang); $b++) {
+                $penjualanharian[$b] = $this->ordermodel->select('tb_barang.nama_barang')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->selectSum('tb_order.jumlah_barang')->where('tb_order.id_barang', $barang[$b]['id_barang'])->where("tb_order.created_at BETWEEN '$waktu_awal' AND  '$waktu_akhir'")->first();
+
+                if ($penjualanharian[$b]['nama_barang'] != null) {
+                    $hasilharian[$b] = $penjualanharian[$b];
+                }
+            }
+        }
+
         $nilai = [
             "menu" => "dashboard",
-            "submenu" => ""
+            "submenu" => "",
+            "transaksi" => $transaksi[0]["id_penjualan"],
+            "items" => $items[0]["jumlah_barang"],
+            "keuntungan" => $keuntungan,
+            "stok" => $this->barangmodel->orderBy('stok_barang', 'ASC')->limit(5)->find(),
+            "harian" => $hasilharian,
+            "bulanan" => $hasilbulanan
         ];
 
         if (get_cookie("access_token")) {
             return view("cms/v_dashboard", $nilai);
-        } else {
-            return view("pages/v_login", $data);
         }
     }
 
+    // list user superadmin
     public function listUsers()
     {
         if (!get_cookie("access_token")) {
@@ -62,15 +133,16 @@ class AuthController extends BaseController
         }
 
         $data = [
-            "menu" => "users",
+            "menu" => "datausers",
             "submenu" => " ",
             "title" => "Data Users",
-            "users" => $this->usersmodel->findAll(),
+            "users" => $this->usersmodel->orderBy('created_at', 'DESC')->findAll(),
         ];
 
         return view("cms/auth/v_users", $data);
     }
 
+    // list karyawan admin
     public function listKaryawan()
     {
         if (!get_cookie("access_token")) {
@@ -85,12 +157,13 @@ class AuthController extends BaseController
             "menu" => "karyawan",
             "submenu" => " ",
             "title" => "Data Karyawan",
-            "karyawan" => $this->usersmodel->where('role', "petugas")->findAll(),
+            "karyawan" => $this->usersmodel->where('role', "petugas")->orderBy('created_at', 'DESC')->findAll(),
         ];
 
         return view("cms/auth/v_karyawan", $data);
     }
 
+    // login
     public function login()
     {
         $validation = $this->validate([
@@ -116,43 +189,48 @@ class AuthController extends BaseController
         $user = $this->usersmodel->where('email', $data['email'])->first();
 
         if ($validation && $user != null) {
-            if ($user['password'] == md5($data['password'])) {
-                $t = now('Asia/Jakarta');
-                $time = date("Y-m-d H:i:s", $t);
-                $last_login = [
-                    "user_id" => $user['user_id'],
-                    "last_login" => $time
-                ];
-                $this->usersmodel->save($last_login);
+            if ($user['activation_status'] != 0) {
+                if ($user['password'] == md5($data['password'])) {
+                    $t = now('Asia/Jakarta');
+                    $time = date("Y-m-d H:i:s", $t);
+                    $last_login = [
+                        "user_id" => $user['user_id'],
+                        "last_login" => $time
+                    ];
+                    $this->usersmodel->save($last_login);
 
-                // $key = getenv('TOKEN_SECRET');
-                $payload = [
-                    'iat'   => 1356999524,
-                    'nbf'   => 1357000000,
-                    'exp' => time() + (60 * 60 * 2),
-                    'uid'   => $user['user_id'],
-                    'email' => $user['email'],
-                    'role' => $user['role'],
-                ];
-                $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
-                setcookie("access_token", $token, time() + 60 * 60 * 2, '/');
-                $profile = [
-                    'email' => $user['email'],
-                    'username' => $user['username'],
-                    'profile_picture' => $user['profile_picture'],
-                    'role' => $user['role']
-                ];
+                    // $key = getenv('TOKEN_SECRET');
+                    $payload = [
+                        'iat'   => 1356999524,
+                        'nbf'   => 1357000000,
+                        'exp' => time() + (60 * 60 * 2),
+                        'uid'   => $user['user_id'],
+                        'email' => $user['email'],
+                        'role' => $user['role'],
+                    ];
+                    $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
+                    setcookie("access_token", $token, time() + 60 * 60 * 2, '/');
+                    $profile = [
+                        'email' => $user['email'],
+                        'username' => $user['username'],
+                        'profile_picture' => $user['profile_picture'],
+                        'role' => $user['role']
+                    ];
 
-                $this->session->set($profile);
+                    $this->session->set($profile);
 
-                if ($data['remember'] != null) {
-                    setcookie("email", $data['email'], time() + 60 * 60 * 24, '/');
-                    $enkripsipwd = base64_encode($data['password']);
-                    setcookie("password", $enkripsipwd, time() + 60 * 60 * 24, '/');
+                    if ($data['remember'] != null) {
+                        setcookie("email", $data['email'], time() + 60 * 60 * 24 * 2, '/');
+                        $enkripsipwd = base64_encode($data['password']);
+                        setcookie("password", $enkripsipwd, time() + 60 * 60 * 24 * 2, '/');
+                    }
+                    return redirect()->to("/");
+                } else {
+                    $this->session->setFlashdata('error', 'Data anda tidak valid');
+                    return redirect()->to("/");
                 }
-                return redirect()->to("/");
             } else {
-                $this->session->setFlashdata('error', 'Data anda tidak valid');
+                $this->session->setFlashdata('error', 'Akun anda belum diaktivasi');
                 return redirect()->to("/");
             }
         } else {
@@ -161,6 +239,7 @@ class AuthController extends BaseController
         }
     }
 
+    // get tampilan tambah users
     public function create()
     {
         if (!get_cookie("access_token")) {
@@ -181,6 +260,7 @@ class AuthController extends BaseController
         return view("cms/auth/v_tambahdata", $data);
     }
 
+    // save atau input data users
     public function save()
     {
         if (!get_cookie("access_token")) {
@@ -194,8 +274,8 @@ class AuthController extends BaseController
         $rules = [
             'email' => 'required|min_length[6]|max_length[255]|valid_email|is_unique[users.email]',
             'password' => 'required|min_length[8]|alpha_numeric',
-            'confpassword' => 'matches[password]',
-            'username' => 'max_length[255]',
+            'confpassword' => 'required|matches[password]',
+            'username' => 'required|max_length[255]',
             'role' => 'required',
         ];
 
@@ -205,33 +285,35 @@ class AuthController extends BaseController
 
         $messages = [
             "email" => [
-                "required" => "{field} tidak boleh kosong",
-                "min_length" => "{field} minimal 6 karakter",
-                "max_length" => "{field} maksimal 255 karakter",
-                "valid_email" => "{field} harus berupa email",
-                "is_unique" => "{field} sudah terdaftar",
+                "required" => "Email Tidak Boleh Kosong",
+                "min_length" => "Email Minimal 6 Karakter",
+                "max_length" => "Email Maksimal 255 Karakter",
+                "valid_email" => "Email Harus Berupa Email",
+                "is_unique" => "Email Sudah Terdaftar",
             ],
             "password" => [
-                "required" => "{field} tidak boleh kosong",
-                "min_length" => "{field} maksimal 8 karakter",
-                "alpha_numeric" => "{field} harus berisi gabungan huruf & angka",
+                "required" => "Password Tidak Boleh Kosong",
+                "min_length" => "Password Minimal 8 Karakter",
+                "alpha_numeric" => "Password Harus Berisi Gabungan Huruf & Angka",
             ],
             "confpassword" => [
-                "matches" => "{field} tidak sama dengan password",
+                "required" => "Konfirmasi Password Tidak Boleh Kosong",
+                "matches" => "Konfirmasi Password Tidak Sama Dengan Password",
             ],
             "username" => [
-                "max_length" => "{field} maksimal 255 karakter"
+                "required" => "Username Tidak Boleh Kosong",
+                "max_length" => "Username Maksimal 255 Karakter"
             ],
             "role" => [
-                "required" => "{field} tidak boleh kosong",
+                "required" => "Role Tidak Boleh Kosong",
             ]
         ];
 
         $messages_image = [
             "profile_picture" => [
-                'uploaded' => '{field} tidak boleh kosong',
-                'mime_in' => '{field} Harus Berupa jpg, jpeg, png atau webp',
-                'max_size' => 'Ukuran {field} Maksimal 4 MB'
+                'uploaded' => 'Foto Profile Tidak Boleh Kosong',
+                'mime_in' => 'Foto Profile Harus Berupa jpg, jpeg, png atau webp',
+                'max_size' => 'Ukuran Foto Profile Maksimal 4 MB'
             ],
         ];
 
@@ -250,6 +332,7 @@ class AuthController extends BaseController
                     "password" => $password,
                     "username" => $this->request->getVar("username"),
                     "role" => $this->request->getVar("role"),
+                    "activation_status" => 0,
                     "profile_picture" => $profileimageFileName
                 ];
 
@@ -258,47 +341,323 @@ class AuthController extends BaseController
                 return redirect()->to("/datausers");
             }
 
+            $dataemail = $this->request->getVar("email");
+
             $data = [
-                "email" => $this->request->getVar("email"),
+                "email" => $dataemail,
                 "password" => $password,
                 "username" => $this->request->getVar("username"),
                 "role" => $this->request->getVar("role"),
+                "activation_status" => 0
             ];
 
-            $this->usersmodel->save($data);
-            session()->setFlashdata("berhasil_tambah", "Data User Berhasil Ditambahkan");
-            return redirect()->to("/datausers");
+            if ($this->usersmodel->save($data)) {
+                $dataemail = $this->request->getVar("email");
+
+                $payload = array(
+                    "iat" => 1356999524,
+                    "nbf" => 1357000000,
+                    "exp" => time() + (60 * 60 * 1),
+                    "email" => $dataemail
+                );
+                $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
+
+                $link = base_url() . "/aktivasi?token=" . $token;
+
+                $linkaduan = base_url() . "/viewgetemail";
+                $datatemplate = [
+                    "email" => $dataemail,
+                    "link" => $link,
+                    "linkaduan" => $linkaduan,
+                    "logo" => base_url("assets/icon/logo.png")
+                ];
+
+                $message = view('template/email.html', $datatemplate);
+
+                $email = \Config\Services::email();
+                $email->setTo($dataemail);
+                $email->setFrom('smartsysindo@gmail.com', 'Link Aktivasi Akun');
+
+                $email->setSubject("Link Aktivasi Akun");
+                $email->setMessage($message);
+                $email->send();
+                session()->setFlashdata("berhasil_tambah", "Data User Berhasil Ditambahkan");
+                return redirect()->to("/datausers");
+            }
+            $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
         } else {
             $this->session->setFlashdata('gagal_tambah', 'Data anda tidak valid');
-            $kesalahan = $this->validator;
             return redirect()
                 ->to("/datausers/tambah")
-                ->withInput()
-                ->with("validation", $kesalahan);
+                ->withInput();
         }
     }
 
-    public function ubah($id)
+    // get verifikasi user
+    public function aktivasiUser()
+    {
+        $token = $this->request->getVar('token');
+
+        try {
+            $decoded = JWT::decode($token, 'JWT_SECRET', ['HS256']);
+
+            $this->usersmodel->activationUsers([
+                'activation_status' => 1
+            ], $decoded->email);
+            return redirect()->to("/");
+        } catch (\Firebase\JWT\ExpiredException $e) {
+            $this->session->setFlashdata('error', 'Token aktivasi kadaluarsa');
+            return redirect()->to("/viewgetemail");
+        }
+    }
+
+    // get new email verifikasi
+    public function viewgetEmail()
+    {
+        $data = [
+            "title" => "Get Aktivasi",
+            "validation" => \Config\Services::validation(),
+        ];
+
+        return view("pages/v_getemail", $data);
+    }
+
+    // get new email reset kata sandi
+    public function lupakatasandi()
+    {
+        $data = [
+            "title" => "Lupa Kata Sandi",
+            "validation" => \Config\Services::validation(),
+        ];
+
+        return view("pages/v_getemail_lupakatasandi", $data);
+    }
+
+    // form input email get verifikasi
+    public function getEmail()
+    {
+        $rules = [
+            'email' => 'required|min_length[6]|max_length[255]|valid_email',
+        ];
+
+        $messages = [
+            "email" => [
+                "required" => "{field} tidak boleh kosong",
+                "min_length" => "{field} minimal 6 karakter",
+                "max_length" => "{field} maksimal 255 karakter",
+                "valid_email" => "{field} harus berupa email",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $dataemail = $this->request->getVar("email");
+            $cekdata = $this->usersmodel->where('email', $dataemail)->first();
+
+            if ($cekdata != null) {
+                if ($cekdata['activation_status'] == 0) {
+                    $payload = array(
+                        "iat" => 1356999524,
+                        "nbf" => 1357000000,
+                        "exp" => time() + (60 * 60 * 1),
+                        "email" => $dataemail
+                    );
+                    $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
+
+                    $link = base_url() . "/aktivasi?token=" . $token;
+                    $linkaduan = base_url() . "/viewgetemail";
+                    $datatemplate = [
+                        "email" => $dataemail,
+                        "link" => $link,
+                        "linkaduan" => $linkaduan,
+                        "logo" => base_url("assets/icon/logo.png")
+                    ];
+
+                    $message = view('template/email_aktivasi.html', $datatemplate);
+
+                    $email = \Config\Services::email();
+                    $email->setTo($dataemail);
+                    $email->setFrom('smartsysindo@gmail.com', 'Link Aktivasi Akun');
+
+                    $email->setSubject("Link Aktivasi Akun");
+                    $email->setMessage($message);
+                    $email->send();
+                    session()->setFlashdata("berhasil", "Email aktivasi berhasil dikirimkan");
+                    return redirect()->to("/");
+                }
+                session()->setFlashdata("berhasil", "Email sudah teraktivasi");
+                return redirect()->to("/");
+            }
+            $this->session->setFlashdata('error', 'Email tidak ditemukan');
+            return redirect()->to("/viewgetemail");
+        } else {
+            $this->session->setFlashdata('error', 'Email gagal dikirimkan');
+            return redirect()->to("/viewgetemail");
+        }
+    }
+
+    // form input email get verifikasi
+    public function getEmailLupakatasandi()
+    {
+        $rules = [
+            'email' => 'required|min_length[6]|max_length[255]|valid_email',
+        ];
+
+        $messages = [
+            "email" => [
+                "required" => "{field} tidak boleh kosong",
+                "min_length" => "{field} minimal 6 karakter",
+                "max_length" => "{field} maksimal 255 karakter",
+                "valid_email" => "{field} harus berupa email",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $dataemail = $this->request->getVar("email");
+            $cekdata = $this->usersmodel->where('email', $dataemail)->first();
+
+            if ($cekdata != null) {
+                $payload = array(
+                    "iat" => 1356999524,
+                    "nbf" => 1357000000,
+                    "exp" => time() + (60 * 15),
+                    "email" => $dataemail
+                );
+                $token = JWT::encode($payload, 'JWT_SECRET', 'HS256');
+
+                $link = base_url() . "/konfirmasilupakatasandi?token=" . $token;
+                $linkaduan = base_url() . "/lupakatasandi";
+                $datatemplate = [
+                    "email" => $dataemail,
+                    "link" => $link,
+                    "linkaduan" => $linkaduan,
+                    "logo" => base_url("assets/icon/logo.png")
+                ];
+
+                $message = view('template/email_konflupakatasandi.html', $datatemplate);
+
+                $email = \Config\Services::email();
+                $email->setTo($dataemail);
+                $email->setFrom('smartsysindo@gmail.com', 'Link Konfirmasi Lupa Kata Sandi');
+
+                $email->setSubject("Link Konfirmasi Lupa Kata Sandi");
+                $email->setMessage($message);
+                $email->send();
+                session()->setFlashdata("berhasil", "Email lupa kata sandi berhasil dikirimkan");
+                return redirect()->to("/");
+            }
+            $this->session->setFlashdata('error', 'Email tidak ditemukan');
+            return redirect()->to("/lupakatasandi");
+        } else {
+            $this->session->setFlashdata('error', 'Email gagal dikirimkan');
+            return redirect()->to("/lupakatasandi");
+        }
+    }
+
+    // get konfirmasi reset kata sandi
+    public function konfLupakatasandi()
+    {
+        $token = $this->request->getVar('token');
+
+        try {
+            $decoded = JWT::decode($token, 'JWT_SECRET', ['HS256']);
+
+            $datauser = $this->usersmodel->where('email', $decoded->email)->first();
+            return redirect()->to("/resetkatasandi?data=" . $datauser['user_id']);
+        } catch (\Firebase\JWT\ExpiredException $e) {
+            $this->session->setFlashdata('error', 'Token aktivasi kadaluarsa');
+            return redirect()->to("/lupakatasandi");
+        }
+    }
+
+    // update kata sandi
+    public function resetkatasandi()
+    {
+        $id = $this->request->getVar("data");
+        
+        $data = [
+            "title" => "Ubah Password",
+            "user" => $this->usersmodel->where('user_id', $id)->first(),
+        ];
+
+        return view("pages/v_ubahkatasandi", $data);
+    }
+
+    public function resetSandi($id)
+    {        
+        $rules = [
+            'passwordbaru' => 'required|min_length[8]|alpha_numeric',
+            'konfirmasipassword' => 'required|matches[passwordbaru]'
+        ];
+
+        $messages = [
+            "passwordbaru" => [
+                "required" => "Kata Sandi Baru Tidak Boleh Kosong",
+                "min_length" => "Kata Sandi Baru Minimal 8 Karakter",
+                "alpha_numeric" => "Kata Sandi Baru Harus Berisi Gabungan Huruf & Angka",
+            ],
+            "konfirmasipassword" => [
+                "required" => "Konfirmasi Kata Sandi Tidak Boleh Kosong",
+                "matches" => "Konfirmasi Kata Sandi Tidak Sama Dengan Kata Sandi",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $password = md5($this->request->getVar("passwordbaru"));
+
+            $datauser = $this->usersmodel->where('user_id', $id)->first();
+
+            $data = [
+                "user_id" => $id,
+                "password" => $password,
+            ];
+
+            if ($this->usersmodel->save($data)) {
+                $link = base_url();
+
+                $datatemplate = [
+                    "email" => $datauser['email'],
+                    "link" => $link,
+                    "logo" => base_url("assets/icon/logo.png")
+                ];
+
+                $message = view('template/lupakatasandi.html', $datatemplate);
+
+                $email = \Config\Services::email();
+                $email->setTo($datauser['email']);
+                $email->setFrom('smartsysindo@gmail.com', 'Konfirmasi Ubah Kata Sandi');
+
+                $email->setSubject("Konfirmasi Ubah Kata Sandi");
+                $email->setMessage($message);
+                $email->send();
+                session()->setFlashdata("berhasil", "Kata Sandi Berhasil Diubah");
+                return redirect()->to("/");
+            }
+            $this->session->setFlashdata('error', 'Data anda tidak valid');
+            return redirect()->to("/resetkatasandi?data=" . $id);
+        } else {
+            $this->session->setFlashdata('error', 'Data anda tidak valid');
+            return redirect()->to("/resetkatasandi?data=" . $id);
+        }
+    }
+
+    // ubah kata sandi
+    public function ubah($email)
     {
         if (!get_cookie("access_token")) {
-            return redirect()->to("/");
-        }
-
-        if ($this->decoded->role != "superadmin") {
             return redirect()->to("/");
         }
 
         $data = [
             "menu" => "datausers",
             "submenu" => " ",
-            "title" => "Data Users",
-            "user" => $this->usersmodel->where('user_id', $id)->first(),
-            "validation" => \Config\Services::validation()
+            "title" => "Ubah Password",
+            "user" => $this->usersmodel->where('email', $email)->first(),
         ];
 
         return view("cms/auth/v_editusers", $data);
     }
 
+    // edit profile
     public function edit($email)
     {
         if (!get_cookie("access_token")) {
@@ -310,150 +669,68 @@ class AuthController extends BaseController
             "submenu" => " ",
             "title" => "Pengaturan Akun",
             "akun" => $this->usersmodel->where('email', $email)->first(),
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/auth/v_editakun", $data);
     }
 
+    // update kata sandi
     public function ganti($id)
     {
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
         }
 
-        if ($this->decoded->role != "superadmin") {
-            return redirect()->to("/");
-        }
-
         $rules = [
-            'username' => 'max_length[255]',
-            'role' => 'required',
-        ];
-
-        $rules_password = [
-            'password' => 'required|min_length[8]|alpha_numeric',
-            'confpassword' => 'matches[password]',
-        ];
-
-        $rules_image = [
-            "profile_picture" => "uploaded[profile_picture]|is_image[profile_picture]|mime_in[profile_picture,image/jpg,image/jpeg,image/png]|max_size[profile_picture,4000]",
+            'password_lama' => 'required',
+            'password_baru' => 'required|min_length[8]|alpha_numeric',
+            'confpassword_baru' => 'required|matches[password_baru]',
         ];
 
         $messages = [
-            "username" => [
-                "max_length" => "{field} maksimal 255 karakter"
+            "password_lama" => [
+                "required" => "Password Lama Tidak Boleh Kosong",
             ],
-            "role" => [
-                "required" => "{field} tidak boleh kosong",
-            ]
-        ];
-
-        $messages_password = [
-            "password" => [
-                "required" => "{field} tidak boleh kosong",
-                "min_length" => "{field} maksimal 8 karakter",
-                "alpha_numeric" => "{field} harus berisi gabungan huruf & angka",
+            "password_baru" => [
+                "required" => "Password Baru Tidak Boleh Kosong",
+                "min_length" => "Password Baru Minimal 8 Karakter",
+                "alpha_numeric" => "Password Baru Harus Berisi Gabungan Huruf & Angka",
             ],
-            "confpassword" => [
-                "matches" => "{field} tidak sama dengan password",
-            ],
-        ];
-
-        $messages_image = [
-            "profile_picture" => [
-                'uploaded' => '{field} tidak boleh kosong',
-                'mime_in' => '{field} Harus Berupa jpg, jpeg, png atau webp',
-                'max_size' => 'Ukuran {field} Maksimal 4 MB'
+            "confpassword_baru" => [
+                "required" => "Password Konfirmasi Tidak Boleh Kosong",
+                "matches" => "Password Konfirmasi Tidak Sama Dengan Password",
             ],
         ];
 
         $cek = $this->usersmodel->where('user_id', $id)->first();
 
         if ($this->validate($rules, $messages)) {
-            if ($this->validate($rules_image, $messages_image)) {
-                $oldprofile = $cek['profile_picture'];
-                $dataprofile = $this->request->getFile('profile_picture');
-                if ($dataprofile->isValid() && !$dataprofile->hasMoved()) {
-                    if (file_exists("assets/image/profile/" . $oldprofile)) {
-                        unlink("assets/image/profile/" . $oldprofile);
-                    }
-                    $profileFileName = $dataprofile->getRandomName();
-                    $dataprofile->move('assets/image/profile/', $profileFileName);
-                } else {
-                    $profileFileName = $oldprofile['profile_picture'];
-                }
+            $password_lama = $this->request->getVar("password_lama");
 
-                $data = [
-                    "user_id" => $id,
-                    "username" => $this->request->getVar("username"),
-                    "role" => $this->request->getVar("role"),
-                    "profile_picture" => $profileFileName
-                ];
-
-                $this->usersmodel->save($data);
-                session()->setFlashdata("berhasil_diubah", " ");
-                return redirect()->to("/datausers/ubah" . "/" . $id);
+            if ($cek['password'] != md5($password_lama)) {
+                session()->setFlashdata("password_gagal", "Password Tidak Cocok");
+                return redirect()->to("/ubahpassword" . "/" . $cek["email"]);
             }
 
-            if ($this->validate($rules_password, $messages_password)) {
-                $password = md5($this->request->getVar("password"));
-                if ($this->validate($rules_image, $messages_image)) {
-                    $oldprofile = $cek['profile_picture'];
-                    $dataprofile = $this->request->getFile('profile_picture');
-                    if ($dataprofile->isValid() && !$dataprofile->hasMoved()) {
-                        if (file_exists("assets/image/profile/" . $oldprofile)) {
-                            unlink("assets/image/profile/" . $oldprofile);
-                        }
-                        $profileFileName = $dataprofile->getRandomName();
-                        $dataprofile->move('assets/image/profile/', $profileFileName);
-                    } else {
-                        $profileFileName = $oldprofile['profile_picture'];
-                    }
-
-                    $data = [
-                        "user_id" => $id,
-                        "password" => $password,
-                        "username" => $this->request->getVar("username"),
-                        "role" => $this->request->getVar("role"),
-                        "profile_picture" => $profileFileName
-                    ];
-
-                    $this->usersmodel->save($data);
-                    session()->setFlashdata("berhasil_diubah", " ");
-                    return redirect()->to("/datausers/ubah" . "/" . $id);
-                }
-
-                $data = [
-                    "user_id" => $id,
-                    "password" => $password,
-                    "username" => $this->request->getVar("username"),
-                    "role" => $this->request->getVar("role"),
-                ];
-
-                $this->usersmodel->save($data);
-                session()->setFlashdata("berhasil_diubah", " ");
-                return redirect()->to("/datausers/ubah" . "/" . $id);
-            }
+            $password_baru = md5($this->request->getVar("password_baru"));
 
             $data = [
                 "user_id" => $id,
-                "username" => $this->request->getVar("username"),
-                "role" => $this->request->getVar("role"),
+                "password" => $password_baru
             ];
 
             $this->usersmodel->save($data);
-            session()->setFlashdata("berhasil_diubah", " ");
-            return redirect()->to("/datausers/ubah" . "/" . $id);
+            session()->setFlashdata("berhasil_diubah", "Password Berhasil Diubah");
+            return redirect()->to("/ubahpassword" . "/" . $cek["email"]);
         } else {
-            $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
-                ->to("/datausers/ubah" . "/" . $id)
-                ->with("validation", $kesalahan);
+                ->to("/ubahpassword" . "/" . $cek["email"])
+                ->withInput();
         }
     }
 
+    // update profile
     public function update($id)
     {
         if (!get_cookie("access_token")) {
@@ -470,16 +747,16 @@ class AuthController extends BaseController
 
         $messages = [
             "username" => [
-                "required" => "{field} tidak boleh kosong",
-                "max_length" => "{field} maksimal 255 karakter",
+                "required" => "Username tidak boleh kosong",
+                "max_length" => "Username maksimal 255 karakter",
             ],
         ];
 
         $messages_image = [
             "profile_picture" => [
-                'uploaded' => '{field} tidak boleh kosong',
-                'mime_in' => '{field} Harus Berupa jpg, jpeg, png atau webp',
-                'max_size' => 'Ukuran {field} Maksimal 4 MB'
+                'uploaded' => 'Foto Profile Tidak Boleh Kosong',
+                'mime_in' => 'Foto Profile Harus Berupa jpg, jpeg, png atau webp',
+                'max_size' => 'Ukuran Foto Profile Maksimal 4 MB'
             ],
         ];
 
@@ -490,8 +767,10 @@ class AuthController extends BaseController
                 $oldprofile = $cek['profile_picture'];
                 $dataprofile = $this->request->getFile('profile_picture');
                 if ($dataprofile->isValid() && !$dataprofile->hasMoved()) {
-                    if (file_exists("assets/image/profile/" . $oldprofile)) {
-                        unlink("assets/image/profile/" . $oldprofile);
+                    if ($oldprofile != 'default.png') {
+                        if (file_exists("assets/image/profile/" . $oldprofile)) {
+                            unlink("assets/image/profile/" . $oldprofile);
+                        }
                     }
                     $profileFileName = $dataprofile->getRandomName();
                     $dataprofile->move('assets/image/profile/', $profileFileName);
@@ -512,8 +791,8 @@ class AuthController extends BaseController
                     "profile_picture" => $data['profile_picture']
                 ];
 
-                $this->session->push('username', ["username" => $data['username']]);
-                $this->session->push('profile_picture', ["profile_picture" => $data['profile_picture']]);
+                unset($_SESSION['username'], $_SESSION['profile_picture']);
+                $this->session->set($user_data);
 
                 session()->setFlashdata("berhasil_diubah", " ");
                 return redirect()->to("/setting" . "/" . $cek["email"]);
@@ -525,17 +804,21 @@ class AuthController extends BaseController
             ];
 
             $this->usersmodel->save($data);
+
+            unset($_SESSION['username']);
+            $this->session->set('username', $data['username']);
+
             session()->setFlashdata("berhasil_diubah", " ");
             return redirect()->to("/setting" . "/" . $cek["email"]);
         } else {
-            $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
                 ->to("/setting" . "/" . $cek["email"])
-                ->with("validation", $kesalahan);
+                ->withInput();
         }
     }
 
+    // logout
     public function logout()
     {
         $this->session->destroy();
@@ -543,6 +826,7 @@ class AuthController extends BaseController
         return redirect()->to('/');
     }
 
+    // delete users
     public function delete($id = null)
     {
         $cek = $this->usersmodel->where('user_id', $id)->first();

@@ -22,4 +22,8 @@ class UsersModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
 
+    function activationUsers($data, $email)
+    {
+        return $this->db->table("users")->where(['email' => $email])->update($data);
+    }
 }

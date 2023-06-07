@@ -1,4 +1,4 @@
-	<link rel="icon" href="<?php echo base_url("Atlantis/assets/img/icon.ico") ?>" type="image/x-icon" />
+	<link rel="icon" href="<?php echo base_url("assets/icon/icon.svg") ?>" type="image/x-icon" />
 
 	<!-- Fonts and icons -->
 	<script src="<?php echo base_url("Atlantis/assets/js/plugin/webfont/webfont.min.js") ?>"></script>
@@ -25,3 +25,4 @@
 	<link rel="stylesheet" href="<?php echo base_url("Atlantis/assets/css/demo.css") ?>">
 
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	

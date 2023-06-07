@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verify</title>
+
+</head>
+
+<body style="box-sizing: border-box;background-color: #F3F6F9 !important;">
+    <table class="table" style="margin-left: auto;margin-right: auto;max-width: 600px;">
+        <thead>
+            <tr>
+                <th style="text-align: start !important;border: none !important;">
+                    <h3 style="font-family: sans-serif;font-style: normal;font-weight: 700;font-size: 24px;">Konfirmasi Reset Kata Sandi Akun Kamu!</h3>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="background-color: white;border-radius: 10px !important;">
+
+                <!-- =========VERIFIKASI EMAIL=============== -->
+
+                <th class="main-body px-4"
+                    style="text-align: start !important;padding-left: 1.25rem !important;padding-right: 1.25rem !important;">
+                    <div class="email-content mt-2" style="margin-top:0.5rem!important">
+                        <img src="http://drive.google.com/uc?export=view&id=1moxRQwD_ePvtzfs5SVqsnl3Fg3ToV4db" style="width: 170px; float: right; margin-top: 6px;">
+                        <br><br><br><br>
+                        <p
+                            style="font-family: sans-serif;font-style: normal;font-weight: 400;font-size: 16px;color: #000000;">
+                            <b>Halo
+                                <?= $email ?> 👋
+                            </b>
+                        </p>
+                        <p
+                            style="font-family: sans-serif;font-style: normal;font-weight: 400;font-size: 16px;color: #000000;">
+                            Silahkan tekan tombol di bawah ini untuk melakukan reset kata sandi di akun kamu ya.</p>
+                        <a href="<?= $link ?>"
+                            style="display:block;border-radius:7px;background-color:#1572E8;text-decoration:none;padding:1rem 0px;color:#f3f6f9;font-family:sans-serif;width:100%;text-align:center; font-size:15px;"><b>Reset Kata Sandi</b></a>
+                        <p
+                            style="font-family: sans-serif;font-style: normal;font-weight: 400;font-size: 16px;color: #000000;">
+                            Jika batas waktu habis & tombol bermasalah, tekan tautan <a href="<?= $linkaduan ?>">disini</a></p>
+                    </div>
+                    <div class="greeting mt-5" style="margin-top: 3rem !important;">
+                        <p
+                            style="font-family: sans-serif;font-style: normal;font-weight: 400;font-size: 16px;color: #000000;">
+                            Salam hangat,</p>
+                        <p
+                            style="font-family: sans-serif;font-style: normal;font-weight: 400;font-size: 16px;color: #000000;">
+                            <b>SmartSys Development Team</b>
+                        </p>
+                    </div>
+                </th>
+            </tr>
+            <tr>
+                <th class="footer pt-4" style="text-align: start !important;">
+                    <br>
+                    <p class="text-center need-help mb-3"
+                        style="font-family: sans-serif;font-style: normal;font-weight: 400;font-size: 16px;color: #000000;text-align: center;">
+                        Butuh bantuan? Silahkan hubungi <a href="#">SmartSysIndo@gmail.com</a></p>
+                    <p class="text-center copyright"
+                        style="font-family: sans-serif;font-style: normal;font-weight: 400;font-size: 16px;color: #000000;text-align: center;">
+                        Copyright &copy; 2023. All Rights Reserved</p>
+                </th>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>

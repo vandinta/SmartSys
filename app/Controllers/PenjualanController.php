@@ -8,6 +8,9 @@ use App\Models\BarangModel;
 use App\Models\CartModel;
 use App\Models\OrderModel;
 use Firebase\JWT\JWT;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Libraries\Pdfgenerator;
 
 class PenjualanController extends BaseController
 {
@@ -20,7 +23,7 @@ class PenjualanController extends BaseController
 
     public function __construct()
     {
-        helper(['cookie', 'date', 'tgl_indo', 'rupiah']);
+        helper(['cookie', 'date', 'tgl_indo', 'rupiah', 'form']);
 
         if (!get_cookie("access_token")) {
             return redirect()->to("/");
@@ -43,26 +46,25 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $waktu_awal = $time . " 00:00:01";
+        $waktu_akhir = $time . " 23:59:59";
+
         $delete_all = $this->cartmodel->delete_all();
 
         $data = [
             "menu" => "datapenjualan",
             "submenu" => "",
             "title" => "Data Penjualan",
-            "penjualan" => $this->penjualanmodel->findAll(),
-            "validation" => \Config\Services::validation(),
+            "penjualan" => $this->penjualanmodel->orderBy('created_at', 'DESC')->findAll(),
+            "waktu_awal" => $waktu_awal,
+            "waktu_akhir" => $waktu_akhir,
         ];
 
         return view("cms/penjualan/v_penjualan", $data);
     }
-
-    // public function pencarian_produk()
-    // {
-    //     var_dump('test');
-    //     die;
-    // 	$data = $this->barangmodel->pencarian_produk($_REQUEST['keyword']);
-    // 	echo json_encode($data);
-    // }
 
     public function create()
     {
@@ -97,7 +99,6 @@ class PenjualanController extends BaseController
             "barang" => $this->barangmodel->findAll(),
             "cart" => $this->cartmodel->join('tb_barang', 'tb_barang.id_barang=cart.id_barang', 'left')->findAll(),
             "harga" => $harga,
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/penjualan/v_tambahdata", $data);
@@ -113,20 +114,37 @@ class PenjualanController extends BaseController
             return redirect()->to("/");
         }
 
-        $id = $this->request->getVar("id_barang");
-
-        $get = $this->barangmodel->where('id_barang', $id)->first();
-
-        $data = [
-            "id_barang" => $this->request->getVar("id_barang"),
-            "harga_beli_barang" => $get['harga_beli'],
-            "harga_jual_barang" => $get['harga_jual'],
-            "qty" => $this->request->getVar("qty"),
-            "jumlah_harga" => $this->request->getVar("jumlah_harga_hide"),
+        $rules = [
+            'id_barang' => 'required',
+            'qty' => 'required|numeric'
         ];
 
-        $this->cartmodel->save($data);
-        return redirect()->to("/datapenjualan/tambah");
+        $messages = [
+            "id_barang" => [
+                "required" => "Nama Barang Tidak Boleh Kosong",
+            ],
+            "qty" => [
+                "required" => "QTY Tidak Boleh Kosong",
+                "numeric" => "QTY Harus Berisi Angka",
+            ]
+        ];
+
+        if ($this->validate($rules, $messages)) {
+            $id = $this->request->getVar("id_barang");
+            $get = $this->barangmodel->where('id_barang', $id)->first();
+
+            $data = [
+                "id_barang" => $this->request->getVar("id_barang"),
+                "harga_beli_barang" => $get['harga_beli'],
+                "harga_jual_barang" => $get['harga_jual'],
+                "qty" => $this->request->getVar("qty"),
+                "jumlah_harga" => $this->request->getVar("jumlah_harga_hide"),
+            ];
+
+            $this->cartmodel->save($data);
+            return redirect()->to("/datapenjualan/tambah");
+        }
+        return redirect()->to("/datapenjualan/tambah")->withInput();
     }
 
     public function delete_cart($id = null)
@@ -186,6 +204,9 @@ class PenjualanController extends BaseController
         $this->penjualanmodel->save($data_penjualan);
         $id_penjualan = $this->penjualanmodel->insertID;
 
+        $bulan_sekarang = date("Y-m", $t);
+        $bulan = $bulan_sekarang . '-01';
+
         for ($i = 0; $i < count($cart); $i++) {
             $data_order = [
                 "id_penjualan" => $id_penjualan,
@@ -193,6 +214,7 @@ class PenjualanController extends BaseController
                 "harga_beli_barang" => $cart[$i]['harga_beli_barang'],
                 "harga_jual_barang" => $cart[$i]['harga_jual_barang'],
                 "jumlah_barang" => $cart[$i]['qty'],
+                "bulan" => $bulan,
             ];
 
             $this->ordermodel->save($data_order);
@@ -230,7 +252,7 @@ class PenjualanController extends BaseController
 
         if ($waktu_penjualan == $time) {
             $waktu = 1;
-        }else{
+        } else {
             $waktu = 0;
         }
 
@@ -242,7 +264,6 @@ class PenjualanController extends BaseController
             "barang" => $this->barangmodel->findAll(),
             "penjualan" => $this->penjualanmodel->where('id_penjualan', $id)->join('users', 'users.user_id=tb_penjualan.user_id', 'left')->first(),
             "order" => $this->ordermodel->where('id_penjualan', $id)->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->findAll(),
-            "validation" => \Config\Services::validation()
         ];
 
         return view("cms/penjualan/v_editdata", $data);
@@ -271,37 +292,60 @@ class PenjualanController extends BaseController
             return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
         }
 
-        $id_barang = $this->request->getVar("id_barang");
-
-        $get = $this->barangmodel->where('id_barang', $id_barang)->first();
-
-        $data = [
-            "id_penjualan" => $id_penjualan,
-            "id_barang" => $id_barang,
-            "harga_beli_barang" => $get['harga_beli'],
-            "harga_jual_barang" => $get['harga_jual'],
-            "jumlah_barang" => $this->request->getVar("qty"),
-            "jumlah_harga" => $this->request->getVar("jumlah_harga_barang"),
+        $rules = [
+            'id_barang' => 'required',
+            'qty' => 'required|numeric'
         ];
 
-        $this->ordermodel->save($data);
-
-        $cek_barang = $this->barangmodel->where('id_barang', $id_barang)->first();
-        $cek_barang['stok_barang'] -= $data['jumlah_barang'];
-        $data_barang = [
-            'stok_barang' => $cek_barang['stok_barang'],
+        $messages = [
+            "id_barang" => [
+                "required" => "Nama Barang Tidak Boleh Kosong",
+            ],
+            "qty" => [
+                "required" => "QTY Tidak Boleh Kosong",
+                "numeric" => "QTY Harus Berisi Angka",
+            ]
         ];
-        $this->barangmodel->update($id_barang, $data_barang);
 
-        $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
-        $cek_penjualan['total_harga'] += $data['jumlah_harga'];
-        $data_penjualan = [
-            'total_harga' => $cek_penjualan['total_harga'],
-        ];
-        $this->penjualanmodel->update($id_penjualan, $data_penjualan);
+        $bulan_sekarang = date("Y-m", $t);
+        $bulan = $bulan_sekarang . '-01';
 
-        session()->setFlashdata("berhasil_tambah_order", "Data Barang Berhasil Ditambahkan");
-        return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
+        if ($this->validate($rules, $messages)) {
+
+            $id_barang = $this->request->getVar("id_barang");
+
+            $get = $this->barangmodel->where('id_barang', $id_barang)->first();
+
+            $data = [
+                "id_penjualan" => $id_penjualan,
+                "id_barang" => $id_barang,
+                "harga_beli_barang" => $get['harga_beli'],
+                "harga_jual_barang" => $get['harga_jual'],
+                "jumlah_barang" => $this->request->getVar("qty"),
+                "jumlah_harga" => $this->request->getVar("jumlah_harga_barang"),
+                "bulan" => $bulan,
+            ];
+
+            $this->ordermodel->save($data);
+
+            $cek_barang = $this->barangmodel->where('id_barang', $id_barang)->first();
+            $cek_barang['stok_barang'] -= $data['jumlah_barang'];
+            $data_barang = [
+                'stok_barang' => $cek_barang['stok_barang'],
+            ];
+            $this->barangmodel->update($id_barang, $data_barang);
+
+            $cek_penjualan = $this->penjualanmodel->where('id_penjualan', $id_penjualan)->first();
+            $cek_penjualan['total_harga'] += $data['jumlah_harga'];
+            $data_penjualan = [
+                'total_harga' => $cek_penjualan['total_harga'],
+            ];
+            $this->penjualanmodel->update($id_penjualan, $data_penjualan);
+
+            session()->setFlashdata("berhasil_tambah_order", "Data Barang Berhasil Ditambahkan");
+            return redirect()->to("/datapenjualan/ubah/" . $id_penjualan);
+        }
+        return redirect()->to("/datapenjualan/ubah/" . $id_penjualan)->withInput();
     }
 
     public function update_penjualan($id)
@@ -331,8 +375,8 @@ class PenjualanController extends BaseController
 
         $messages = [
             "nama_penjualan" => [
-                "required" => "{field} tidak boleh kosong",
-                "max_length" => "{field} maksimal 255 karakter",
+                "required" => "Nama Penjualan tidak boleh kosong",
+                "max_length" => "Nama Penjualan maksimal 255 karakter",
             ],
         ];
 
@@ -346,11 +390,10 @@ class PenjualanController extends BaseController
             session()->setFlashdata("berhasil_diubah", "Data Penjualan Berhasil Ditubah");
             return redirect()->to("/datapenjualan/ubah/" . "/" . $id);
         } else {
-            $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
-                ->to("/databarang/ubah/" . "/" . $id)
-                ->with("validation", $kesalahan);
+                ->to("/datapenjualan/ubah/" . "/" . $id)
+                ->withInput();
         }
     }
 
@@ -388,7 +431,7 @@ class PenjualanController extends BaseController
 
         $messages = [
             "qty" => [
-                "required" => "{field} tidak boleh kosong",
+                "required" => "QTY Tidak Boleh Kosong",
             ],
         ];
 
@@ -445,13 +488,21 @@ class PenjualanController extends BaseController
             $kesalahan = \Config\Services::validation();
             $this->session->setFlashdata('gagal_diubah', 'Data anda tidak valid');
             return redirect()
-                ->to("/databarang/ubah/" . "/" . $id_penjualan)
-                ->with("validation", $kesalahan);
+                ->to("/datapenjualan/ubah/" . "/" . $id_penjualan)
+                ->withInput();
         }
     }
 
     public function delete_order($id = null)
     {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
         $cek = $this->ordermodel->where('id_order', $id)->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->first();
 
         $t = now('Asia/Jakarta');
@@ -492,13 +543,425 @@ class PenjualanController extends BaseController
 
     public function delete($id = null)
     {
-        $cek = $this->penjualanmodel->where('id_penjualan', $id)->first();
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
 
-        if ($this->penjualanmodel->delete($id)) {
+        if ($this->decoded->role == "superadmin") {
+            return redirect()->to("/");
+        }
+
+        $t = now('Asia/Jakarta');
+        $time = date("Y-m-d", $t);
+
+        $cek = $this->penjualanmodel->where('id_penjualan', $id)->first();
+        $wkt_penjualan = strtotime($cek["created_at"]);
+        $waktu_penjualan = date("Y-m-d", $wkt_penjualan);
+
+        
+        if ($waktu_penjualan != $time) {
             return $this->response->setJSON([
-                'error' => false,
-                'message' => 'Data ' . $cek['nama_penjualan'] . ' Berhasil Dihapus!'
+                'error' => true,
+                'message' => 'Data ' . $cek['nama_penjualan'] . ' Gagal Dihapus!'
             ]);
+            // return redirect()->to("/datapenjualan");
+        }
+        
+        if ($cek != null) {
+            $cek_order = $this->ordermodel->where('id_penjualan', $id)->findAll();
+            
+            if ($cek_order != null) {
+                for ($i = 0; $i < count($cek_order); $i++) {
+                    $cek_barang = $this->barangmodel->where('id_barang', $cek_order[$i]['id_barang'])->first();
+                    $cek_barang['stok_barang'] = $cek_barang['stok_barang'] + $cek_order[$i]['jumlah_barang'];
+                    $data_barang = [
+                        'stok_barang' => $cek_barang['stok_barang'],
+                    ];
+                    $this->barangmodel->update($cek_barang['id_barang'], $data_barang);
+                }
+            }
+            
+            if ($this->penjualanmodel->delete($id)) {
+                return $this->response->setJSON([
+                    'error' => false,
+                    'message' => 'Data ' . $cek['nama_penjualan'] . ' Berhasil Dihapus!'
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'error' => true,
+                    'message' => 'Data ' . $cek['nama_penjualan'] . ' Gagal Dihapus!'
+                ]);
+            }
+        } else {
+            return $this->response->setJSON([
+                'error' => true,
+                'message' => 'Data ' . $cek['nama_penjualan'] . ' Gagal Dihapus!'
+            ]);
+        }
+    }
+
+    public function exportExcel()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Tanggal Penjualan');
+        $sheet->setCellValue('C1', 'Jam Penjualan');
+        $sheet->setCellValue('D1', 'Nama Barang');
+        $sheet->setCellValue('E1', 'Jumlah Barang');
+        $sheet->setCellValue('F1', 'Harga Pembelian');
+        $sheet->setCellValue('G1', 'Harga Penjualan');
+        $sheet->setCellValue('H1', 'Jumlah');
+        $sheet->setCellValue('I1', 'Total Pembelian');
+        $kolom = 2;
+
+        $penjualan = $this->penjualanmodel->findAll();
+        for ($i = 0; $i < count($penjualan); $i++) {
+
+            $id_penjualan[$i] = $penjualan[$i]['id_penjualan'];
+
+            // waktu pembelian
+            $wkt_penjualan[$i] = strtotime($penjualan[$i]["created_at"]);
+            $tanggal_penjualan[$i] = date("d-m-Y", $wkt_penjualan[$i]);
+            $jam_penjualan[$i] = date("H:i:s", $wkt_penjualan[$i]);
+
+            $order[$i] = $this->ordermodel->where('id_penjualan', $id_penjualan[$i])->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->findAll();
+
+            for ($q = 0; $q < count($order[$i]); $q++) {
+                $id_order[$q] = $order[$i][$q]['id_order'];
+                $order_list[$q] = $this->ordermodel->where('id_order', $id_order[$q])->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->first();
+
+                // hitung jumlah
+                $jumlah[$q] = $order_list[$q]["jumlah_barang"] * $order_list[$q]["harga_jual_barang"];
+
+                $sheet->setCellValue('A' . $kolom, ($kolom - 1));
+                $sheet->setCellValue('B' . $kolom, $tanggal_penjualan[$i]);
+                $sheet->setCellValue('C' . $kolom, $jam_penjualan[$i]);
+                $sheet->setCellValue('D' . $kolom, $order_list[$q]['nama_barang']);
+                $sheet->setCellValue('E' . $kolom, $order_list[$q]['jumlah_barang']);
+                $sheet->setCellValue('F' . $kolom, $order_list[$q]['harga_beli_barang']);
+                $sheet->setCellValue('G' . $kolom, $order_list[$q]['harga_jual_barang']);
+                $sheet->setCellValue('H' . $kolom, $jumlah[$q]);
+                $sheet->setCellValue('I' . $kolom, $penjualan[$i]['total_harga']);
+                $kolom++;
+            }
+        }
+
+        $sheet->getStyle('A1:I1')->getFont()->setBold(true);
+        $spreadsheet->getActiveSheet()->getStyle('A1:I1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('4040ff');
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ]
+            ]
+        ];
+        $sheet->getStyle('A1:I' . ($kolom - 1))->applyFromArray($styleArray);
+
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+        $sheet->getColumnDimension('G')->setAutoSize(true);
+        $sheet->getColumnDimension('H')->setAutoSize(true);
+        $sheet->getColumnDimension('I')->setAutoSize(true);
+
+        $writer = new Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename=data-penjualan.xlsx');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
+    }
+
+    public function exportCsv()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Tanggal Penjualan');
+        $sheet->setCellValue('C1', 'Nama Barang');
+        $sheet->setCellValue('D1', 'Jumlah Barang');
+        $sheet->setCellValue('E1', 'Harga Pembelian');
+        $sheet->setCellValue('F1', 'Harga Penjualan');
+        $sheet->setCellValue('G1', 'Jumlah');
+        $sheet->setCellValue('H1', 'Total Pembelian');
+        $kolom = 2;
+
+        $penjualan = $this->penjualanmodel->findAll();
+        for ($i = 0; $i < count($penjualan); $i++) {
+
+            $id_penjualan[$i] = $penjualan[$i]['id_penjualan'];
+
+            // waktu pembelian
+            $wkt_penjualan[$i] = strtotime($penjualan[$i]["created_at"]);
+            $waktu_penjualan[$i] = date("d-m-Y H:i:s", $wkt_penjualan[$i]);
+
+
+            $order[$i] = $this->ordermodel->where('id_penjualan', $id_penjualan[$i])->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->findAll();
+
+            for ($q = 0; $q < count($order[$i]); $q++) {
+                $id_order[$q] = $order[$i][$q]['id_order'];
+                $order_list[$q] = $this->ordermodel->where('id_order', $id_order[$q])->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->first();
+
+                // hitung jumlah
+                $jumlah[$q] = $order_list[$q]["jumlah_barang"] * $order_list[$q]["harga_jual_barang"];
+
+                $sheet->setCellValue('A' . $kolom, ($kolom - 1));
+                $sheet->setCellValue('B' . $kolom, $waktu_penjualan[$i]);
+                $sheet->setCellValue('C' . $kolom, $order_list[$q]['nama_barang']);
+                $sheet->setCellValue('D' . $kolom, $order_list[$q]['jumlah_barang']);
+                $sheet->setCellValue('E' . $kolom, $order_list[$q]['harga_beli_barang']);
+                $sheet->setCellValue('F' . $kolom, $order_list[$q]['harga_jual_barang']);
+                $sheet->setCellValue('G' . $kolom, $jumlah[$q]);
+                $sheet->setCellValue('H' . $kolom, $penjualan[$i]['total_harga']);
+                $kolom++;
+            }
+        }
+
+        $sheet->getStyle('A1:H1')->getFont()->setBold(true);
+        $spreadsheet->getActiveSheet()->getStyle('A1:H1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('4040ff');
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ]
+            ]
+        ];
+        $sheet->getStyle('A1:H' . ($kolom - 1))->applyFromArray($styleArray);
+
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+        $sheet->getColumnDimension('G')->setAutoSize(true);
+        $sheet->getColumnDimension('H')->setAutoSize(true);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformat-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename=data-penjualan.csv');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
+    }
+
+    public function exportPdf()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $Pdfgenerator = new Pdfgenerator();
+
+        $file_pdf = 'data-penjualan';
+        $paper = 'A4';
+        $orientation = "portrait";
+
+        $data = [
+            "title" => "Data Penjualan",
+            "order" => $this->ordermodel->join('tb_penjualan', 'tb_penjualan.id_penjualan=tb_order.id_penjualan', 'left')->join('tb_barang', 'tb_barang.id_barang=tb_order.id_barang', 'left')->findAll()
+        ];
+
+        $html = view("cms/penjualan/v_pdf", $data);
+
+        $output = $Pdfgenerator->generate($html, $file_pdf, $paper, $orientation);
+        file_put_contents('data-penjualan.pdf', $output);
+        exit();
+    }
+
+    public function import()
+    {
+        if (!get_cookie("access_token")) {
+            return redirect()->to("/");
+        }
+
+        $file = $this->request->getFile('file_import');
+        $extension = $file->getClientExtension();
+        if ($extension == 'xlsx' || $extension == 'xls' || $extension == 'csv') {
+            if ($extension == 'xlsx' || $extension == 'xls') {
+                if ($extension == 'xlsx') {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                } else {
+                    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                }
+                $spreadsheet = $reader->load($file);
+                $penjualan = $spreadsheet->getActiveSheet()->toArray();
+                foreach ($penjualan as $key => $value) {
+                    if ($key == 0) {
+                        continue;
+                    }
+
+                    $tanggal = $value[1];
+                    $jam = $value[2];
+                    $tanggal_jam = $tanggal . $jam;
+                    $tanggal_penjualan = strtotime($tanggal_jam);
+                    $waktu_penjualan = date("Y-m-d H:i:s", $tanggal_penjualan);
+                    $bulan_sekarang = date("Y-m", $tanggal_penjualan);
+                    $bulan = $bulan_sekarang . '-01';
+                    $nama_penjualan = "Penjualan Pada Hari " . tgl_indonesia($waktu_penjualan);
+                    $cekdatapenjualan = $this->penjualanmodel->where('nama_penjualan', $nama_penjualan)->first();
+                    $datapenjualan = [
+                        'user_id' => $this->decoded->uid,
+                        'nama_penjualan' => $nama_penjualan,
+                        'total_harga' => $value[8],
+                        'created_at' => $waktu_penjualan
+                    ];
+                    if ($cekdatapenjualan == null) {
+                        $this->penjualanmodel->insert($datapenjualan);
+                    }
+                    $ceknamapenjualan = $this->penjualanmodel->findAll();
+                    for ($i = 0; $i < count($ceknamapenjualan); $i++) {
+                        if ($ceknamapenjualan[$i]['nama_penjualan'] == $nama_penjualan) {
+                            $primarypenjualan = $ceknamapenjualan[$i]['id_penjualan'];
+                        }
+                    }
+                    $cekbarang = $this->barangmodel->findAll();
+                    for ($q = 0; $q < count($cekbarang); $q++) {
+                        if ($cekbarang[$q]['nama_barang'] == $value[3]) {
+                            $barang = $cekbarang[$q]['id_barang'];
+                        }
+                    }
+                    $cekpenjualanorder = $this->ordermodel->where('id_barang', $barang)->where('id_penjualan', $primarypenjualan)->first();
+                    $data = [
+                        'id_penjualan' => $primarypenjualan,
+                        'id_barang' => $barang,
+                        'jumlah_barang' => $value[4],
+                        'harga_beli_barang' => $value[5],
+                        'harga_jual_barang' => $value[6],
+                        'bulan' => $bulan,
+                        'created_at' => $waktu_penjualan
+                    ];
+                    if ($cekpenjualanorder == null) {
+                        $this->ordermodel->insert($data);
+                    }
+                }
+                $this->session->setFlashdata('berhasil_import', 'Data Berhasil Diimport!');
+                return redirect()->to("/datapenjualan");
+            } else {
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                $spreadsheet = $reader->load($file);
+                $penjualan = $spreadsheet->getActiveSheet()->toArray();
+                foreach ($penjualan as $key => $value) {
+                    if ($key == 0) {
+                        continue;
+                    }
+
+                    if ($value[1] != 0) {
+                        $tanggal = $value[1];
+                        $jam = $value[2];
+                        $tanggal_jam = $tanggal . $jam;
+                        $tanggal_penjualan = strtotime($tanggal_jam);
+                        $waktu_penjualan = date("Y-m-d H:i:s", $tanggal_penjualan);
+                        $bulan_sekarang = date("Y-m", $tanggal_penjualan);
+                        $bulan = $bulan_sekarang . '-01';
+                        $nama_penjualan = "Penjualan Pada Hari " . tgl_indonesia($waktu_penjualan);
+                        $cekdatapenjualan = $this->penjualanmodel->where('nama_penjualan', $nama_penjualan)->first();
+                        $datapenjualan = [
+                            'user_id' => $this->decoded->uid,
+                            'nama_penjualan' => $nama_penjualan,
+                            'total_harga' => $value[8],
+                            'created_at' => $waktu_penjualan
+                        ];
+                        if ($cekdatapenjualan == null) {
+                            $this->penjualanmodel->insert($datapenjualan);
+                        }
+                        $ceknamapenjualan = $this->penjualanmodel->findAll();
+                        for ($i = 0; $i < count($ceknamapenjualan); $i++) {
+                            if ($ceknamapenjualan[$i]['nama_penjualan'] == $nama_penjualan) {
+                                $primarypenjualan = $ceknamapenjualan[$i]['id_penjualan'];
+                            }
+                        }
+                        $cekbarang = $this->barangmodel->findAll();
+                        for ($q = 0; $q < count($cekbarang); $q++) {
+                            if ($cekbarang[$q]['nama_barang'] == $value[3]) {
+                                $barang = $cekbarang[$q]['id_barang'];
+                            }
+                        }
+                        $cekpenjualanorder = $this->ordermodel->where('id_barang', $barang)->where('id_penjualan', $primarypenjualan)->first();
+                        $data = [
+                            'id_penjualan' => $primarypenjualan,
+                            'id_barang' => $barang,
+                            'jumlah_barang' => $value[4],
+                            'harga_beli_barang' => $value[5],
+                            'harga_jual_barang' => $value[6],
+                            'bulan' => $bulan,
+                            'created_at' => $waktu_penjualan
+                        ];
+                        if ($cekpenjualanorder == null) {
+                            $this->ordermodel->insert($data);
+                        }
+                    } else {
+                        $rawpenjualan = $value[0];
+                        $cleanpenjualan = explode(",", $rawpenjualan);
+                        $tanggal = $cleanpenjualan[1];
+                        $jam = $cleanpenjualan[2];
+                        $tanggal_jam = $tanggal . $jam;
+                        $tanggal_penjualan = strtotime($tanggal_jam);
+                        $waktu_penjualan = date("Y-m-d H:i:s", $tanggal_penjualan);
+                        $bulan_sekarang = date("Y-m", $tanggal_penjualan);
+                        $bulan = $bulan_sekarang . '-01';
+                        $nama_penjualan = "Penjualan Pada Hari " . tgl_indonesia($waktu_penjualan);
+                        $cekdatapenjualan = $this->penjualanmodel->where('nama_penjualan', $nama_penjualan)->first();
+                        $datapenjualan = [
+                            'user_id' => $this->decoded->uid,
+                            'nama_penjualan' => $nama_penjualan,
+                            'total_harga' => $cleanpenjualan[8],
+                            'created_at' => $waktu_penjualan
+                        ];
+                        if ($cekdatapenjualan == null) {
+                            $this->penjualanmodel->insert($datapenjualan);
+                        }
+                        $ceknamapenjualan = $this->penjualanmodel->findAll();
+                        for ($i = 0; $i < count($ceknamapenjualan); $i++) {
+                            if ($ceknamapenjualan[$i]['nama_penjualan'] == $nama_penjualan) {
+                                $primarypenjualan = $ceknamapenjualan[$i]['id_penjualan'];
+                            }
+                        }
+                        $cekbarang = $this->barangmodel->findAll();
+                        for ($q = 0; $q < count($cekbarang); $q++) {
+                            if ($cekbarang[$q]['nama_barang'] == $cleanpenjualan[3]) {
+                                $barang = $cekbarang[$q]['id_barang'];
+                            }
+                        }
+                        $cekpenjualanorder = $this->ordermodel->where('id_barang', $barang)->where('id_penjualan', $primarypenjualan)->first();
+                        $data = [
+                            'id_penjualan' => $primarypenjualan,
+                            'id_barang' => $barang,
+                            'jumlah_barang' => $cleanpenjualan[4],
+                            'harga_beli_barang' => $cleanpenjualan[5],
+                            'harga_jual_barang' => $cleanpenjualan[6],
+                            'bulan' => $bulan,
+                            'created_at' => $waktu_penjualan
+                        ];
+                        if ($cekpenjualanorder == null) {
+                            $this->ordermodel->insert($data);
+                        }
+                    }
+                }
+                $this->session->setFlashdata('berhasil_import', 'Data Berhasil Diimport!');
+                return redirect()->to("/datapenjualan");
+            }
+        } else {
+            $this->session->setFlashdata('gagal_import', 'Data anda tidak sesuai');
+            return redirect()->to("/datapenjualan");
         }
     }
 }
